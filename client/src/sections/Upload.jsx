@@ -1,17 +1,139 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { useAppContext } from "../context/AppContext"; // Import the context for API URL
 
 const Upload = () => {
+  const { API_URL } = useAppContext(); // Access the centralized API URL
   const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
   // CRUD states for Batches, Class, and Section
-  const [batches, setBatches] = useState(["A", "B"]);
-  const [classes, setClasses] = useState(["CS1", "CS2"]);
-  const [sections, setSections] = useState(["2023", "2024"]);
+  const [batches, setBatches] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
 
   const [newBatch, setNewBatch] = useState("");
   const [newClass, setNewClass] = useState("");
   const [newSection, setNewSection] = useState("");
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchBatches();
+    fetchClasses();
+    fetchSections();
+  }, []);
+
+  // Fetch Batches
+  const fetchBatches = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/upload/batches`);
+      setBatches(data);
+    } catch (error) {
+      toast.error("Failed to fetch batches");
+    }
+  };
+
+  // Fetch Classes
+  const fetchClasses = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/upload/classes`);
+      setClasses(data);
+    } catch (error) {
+      toast.error("Failed to fetch classes");
+    }
+  };
+
+  // Fetch Sections
+  const fetchSections = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/upload/sections`);
+      setSections(data);
+    } catch (error) {
+      toast.error("Failed to fetch sections");
+    }
+  };
+
+  // Add Batch
+  const addBatch = async () => {
+    if (!newBatch.trim()) {
+      toast.error("Batch name cannot be empty");
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${API_URL}/upload/batches`, { name: newBatch });
+      setBatches([...batches, data]);
+      setNewBatch("");
+      toast.success("Batch added successfully");
+    } catch (error) {
+      toast.error("Failed to add batch");
+    }
+  };
+
+  // Delete Batch
+  const deleteBatch = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/upload/batches/${id}`);
+      setBatches(batches.filter((batch) => batch._id !== id));
+      toast.success("Batch deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete batch");
+    }
+  };
+
+  // Add Class
+  const addClass = async () => {
+    if (!newClass.trim()) {
+      toast.error("Class name cannot be empty");
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${API_URL}/upload/classes`, { name: newClass });
+      setClasses([...classes, data]);
+      setNewClass("");
+      toast.success("Class added successfully");
+    } catch (error) {
+      toast.error("Failed to add class");
+    }
+  };
+
+  // Delete Class
+  const deleteClass = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/upload/classes/${id}`);
+      setClasses(classes.filter((cls) => cls._id !== id));
+      toast.success("Class deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete class");
+    }
+  };
+
+  // Add Section
+  const addSection = async () => {
+    if (!newSection.trim()) {
+      toast.error("Section name cannot be empty");
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${API_URL}/upload/sections`, { name: newSection });
+      setSections([...sections, data]);
+      setNewSection("");
+      toast.success("Section added successfully");
+    } catch (error) {
+      toast.error("Failed to add section");
+    }
+  };
+
+  // Delete Section
+  const deleteSection = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/upload/sections/${id}`);
+      setSections(sections.filter((section) => section._id !== id));
+      toast.success("Section deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete section");
+    }
+  };
 
   const handleFileSelect = (event) => {
     const files = event.target.files || event.dataTransfer.files;
@@ -40,40 +162,6 @@ const Upload = () => {
     event.preventDefault();
     setDragging(false);
     handleFileSelect(event);
-  };
-
-  // CRUD Handlers
-  const addBatch = () => {
-    if (newBatch.trim() && !batches.includes(newBatch)) {
-      setBatches([...batches, newBatch]);
-      setNewBatch("");
-    }
-  };
-
-  const deleteBatch = (batch) => {
-    setBatches(batches.filter((b) => b !== batch));
-  };
-
-  const addClass = () => {
-    if (newClass.trim() && !classes.includes(newClass)) {
-      setClasses([...classes, newClass]);
-      setNewClass("");
-    }
-  };
-
-  const deleteClass = (cls) => {
-    setClasses(classes.filter((c) => c !== cls));
-  };
-
-  const addSection = () => {
-    if (newSection.trim() && !sections.includes(newSection)) {
-      setSections([...sections, newSection]);
-      setNewSection("");
-    }
-  };
-
-  const deleteSection = (section) => {
-    setSections(sections.filter((s) => s !== section));
   };
 
   return (
@@ -153,10 +241,10 @@ const Upload = () => {
             </div>
             <ul className="list-disc pl-6">
               {batches.map((batch) => (
-                <li key={batch} className="flex justify-between items-center">
-                  <span>{batch}</span>
+                <li key={batch._id} className="flex justify-between items-center">
+                  <span>{batch.name}</span>
                   <button
-                    onClick={() => deleteBatch(batch)}
+                    onClick={() => deleteBatch(batch._id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete
@@ -186,10 +274,10 @@ const Upload = () => {
             </div>
             <ul className="list-disc pl-6">
               {classes.map((cls) => (
-                <li key={cls} className="flex justify-between items-center">
-                  <span>{cls}</span>
+                <li key={cls._id} className="flex justify-between items-center">
+                  <span>{cls.name}</span>
                   <button
-                    onClick={() => deleteClass(cls)}
+                    onClick={() => deleteClass(cls._id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete
@@ -219,10 +307,10 @@ const Upload = () => {
             </div>
             <ul className="list-disc pl-6">
               {sections.map((section) => (
-                <li key={section} className="flex justify-between items-center">
-                  <span>{section}</span>
+                <li key={section._id} className="flex justify-between items-center">
+                  <span>{section.name}</span>
                   <button
-                    onClick={() => deleteSection(section)}
+                    onClick={() => deleteSection(section._id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete

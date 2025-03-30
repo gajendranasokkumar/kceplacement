@@ -20,17 +20,16 @@ const Dashboard = ({ token }) => {
   });
 
   // To-Do State
-  const [todoLists, setTodoLists] = useState([
-    { id: 1, title: "Default List", todos: [] },
-  ]);
+  const [todoLists, setTodoLists] = useState([]);
   const [newTodoText, setNewTodoText] = useState("");
   const [newTodoDueDate, setNewTodoDueDate] = useState("");
-  const [selectedListId, setSelectedListId] = useState(1);
+  const [selectedListId, setSelectedListId] = useState(null);
 
+  // Fetch data on component mount
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/students`, {
+        const { data } = await axios.get(`${API_URL}/dashboard/students`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStudents(data);
@@ -45,7 +44,7 @@ const Dashboard = ({ token }) => {
 
     const fetchStatistics = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/statistics`, {
+        const { data } = await axios.get(`${API_URL}/dashboard/statistics`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStatistics(data);
@@ -54,71 +53,107 @@ const Dashboard = ({ token }) => {
       }
     };
 
+    const fetchTodoLists = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/dashboard/todo-lists`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTodoLists(data);
+        if (data.length > 0) setSelectedListId(data[0]._id); // Select the first list by default
+      } catch (error) {
+        toast.error("Failed to fetch to-do lists");
+      }
+    };
+
     fetchStudents();
     fetchStatistics();
+    fetchTodoLists();
   }, [API_URL, token]);
 
   // Add a new To-Do
-  const addTodo = () => {
+  const addTodo = async () => {
     if (!newTodoText.trim() || !newTodoDueDate.trim()) {
       toast.error("Please enter a to-do and due date");
       return;
     }
-    const newTodo = {
-      id: Date.now(),
-      text: newTodoText,
-      dueDate: newTodoDueDate,
-      completed: false,
-    };
-    setTodoLists((prev) =>
-      prev.map((list) =>
-        list.id === selectedListId
-          ? { ...list, todos: [...list.todos, newTodo] }
-          : list
-      )
-    );
-    setNewTodoText("");
-    setNewTodoDueDate("");
-    toast.success("To-Do Added");
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/dashboard/todo-lists/${selectedListId}/todos`,
+        { text: newTodoText, dueDate: newTodoDueDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTodoLists((prev) =>
+        prev.map((list) =>
+          list._id === selectedListId
+            ? { ...list, todos: [...list.todos, data] }
+            : list
+        )
+      );
+      setNewTodoText("");
+      setNewTodoDueDate("");
+      toast.success("To-Do Added");
+    } catch (error) {
+      toast.error("Failed to add to-do");
+    }
   };
 
   // Toggle To-Do Completion
-  const toggleTodoCompletion = (listId, todoId) => {
-    setTodoLists((prev) =>
-      prev.map((list) =>
-        list.id === listId
-          ? {
-              ...list,
-              todos: list.todos.map((todo) =>
-                todo.id === todoId
-                  ? { ...todo, completed: !todo.completed }
-                  : todo
-              ),
-            }
-          : list
-      )
-    );
+  const toggleTodoCompletion = async (listId, todoId, completed) => {
+    try {
+      const { data } = await axios.put(
+        `${API_URL}/dashboard/todo-lists/${listId}/todos/${todoId}`,
+        { completed },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTodoLists((prev) =>
+        prev.map((list) =>
+          list._id === listId
+            ? {
+                ...list,
+                todos: list.todos.map((todo) =>
+                  todo._id === todoId ? data : todo
+                ),
+              }
+            : list
+        )
+      );
+      toast.success("To-Do Updated");
+    } catch (error) {
+      toast.error("Failed to update to-do");
+    }
   };
 
   // Add a new To-Do List
-  const addTodoList = () => {
-    const newList = {
-      id: Date.now(),
-      title: `New List ${todoLists.length + 1}`,
-      todos: [],
-    };
-    setTodoLists([...todoLists, newList]);
-    setSelectedListId(newList.id);
-    toast.success("New To-Do List Created");
+  const addTodoList = async () => {
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/dashboard/todo-lists`,
+        { title: `New List ${todoLists.length + 1}` },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTodoLists([...todoLists, data]);
+      setSelectedListId(data._id);
+      toast.success("New To-Do List Created");
+    } catch (error) {
+      toast.error("Failed to create to-do list");
+    }
   };
 
   // Update List Name
-  const updateListName = (listId, newName) => {
-    setTodoLists((prev) =>
-      prev.map((list) =>
-        list.id === listId ? { ...list, title: newName } : list
-      )
-    );
+  const updateListName = async (listId, newName) => {
+    try {
+      const { data } = await axios.put(
+        `${API_URL}/dashboard/todo-lists/${listId}`,
+        { title: newName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTodoLists((prev) =>
+        prev.map((list) => (list._id === listId ? data : list))
+      );
+      toast.success("List name updated");
+    } catch (error) {
+      toast.error("Failed to update list name");
+    }
   };
 
   return (
@@ -169,11 +204,11 @@ const Dashboard = ({ token }) => {
           <div className="flex items-center space-x-4">
             <select
               value={selectedListId}
-              onChange={(e) => setSelectedListId(Number(e.target.value))}
+              onChange={(e) => setSelectedListId(e.target.value)}
               className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {todoLists.map((list) => (
-                <option key={list.id} value={list.id}>
+                <option key={list._id} value={list._id}>
                   {list.title}
                 </option>
               ))}
@@ -213,16 +248,16 @@ const Dashboard = ({ token }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {todoLists.map((list) => (
             <div
-              key={list.id}
+              key={list._id}
               className={`p-4 rounded-lg shadow-md ${
-                list.id === selectedListId ? "bg-blue-100" : "bg-gray-100"
+                list._id === selectedListId ? "bg-blue-100" : "bg-gray-100"
               }`}
             >
               <div className="flex justify-between items-center mb-4">
                 <input
                   type="text"
                   value={list.title}
-                  onChange={(e) => updateListName(list.id, e.target.value)}
+                  onChange={(e) => updateListName(list._id, e.target.value)}
                   className="text-lg font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
                 />
                 <FaEdit className="text-gray-500" />
@@ -230,7 +265,7 @@ const Dashboard = ({ token }) => {
               <ul className="mt-4 space-y-2">
                 {list.todos.map((todo) => (
                   <li
-                    key={todo.id}
+                    key={todo._id}
                     className={`p-2 rounded-lg flex justify-between items-center ${
                       todo.completed ? "bg-green-100" : "bg-white"
                     }`}
@@ -240,12 +275,19 @@ const Dashboard = ({ token }) => {
                         todo.completed ? "text-gray-500" : "text-gray-700"
                       }`}
                     >
-                      <span  className={`${
-                        todo.completed ? "line-through" : ""
-                      }`}>{todo.text}</span> - <small>{todo.dueDate}</small>
+                      <span
+                        className={`${
+                          todo.completed ? "line-through" : ""
+                        }`}
+                      >
+                        {todo.text}
+                      </span>{" "}
+                      - <small>{todo.dueDate}</small>
                     </span>
                     <button
-                      onClick={() => toggleTodoCompletion(list.id, todo.id)}
+                      onClick={() =>
+                        toggleTodoCompletion(list._id, todo._id, !todo.completed)
+                      }
                       className={`p-2 rounded-full ${
                         todo.completed
                           ? "bg-green-500 text-white hover:bg-green-600"
