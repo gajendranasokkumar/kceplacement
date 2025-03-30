@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
-import { FaEdit, FaSave } from "react-icons/fa"; // Import edit and save icons
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa"; // Added FaTimes for close button
 
 const ShowStudents = () => {
   const { API_URL } = useAppContext();
@@ -23,6 +23,11 @@ const ShowStudents = () => {
   const [selectedCompany, setSelectedCompany] = useState(""); // Selected company for placement
   const [selectedDepartment, setSelectedDepartment] = useState(""); // Selected department filter
   const [selectedBatch, setSelectedBatch] = useState(""); // Selected batch filter
+  
+  // Company popup state
+  const [showCompanyPopup, setShowCompanyPopup] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState(null);
+  const [loadingCompany, setLoadingCompany] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,6 +73,21 @@ const ShowStudents = () => {
       setCompanies(data);
     } catch (error) {
       console.error("Failed to fetch companies:", error);
+    }
+  };
+
+  // Fetch company details
+  const fetchCompanyDetails = async (companyId) => {
+    try {
+      setLoadingCompany(true);
+      const { data } = await axios.get(`${API_URL}/companies/${companyId}`);
+      setCompanyDetails(data);
+      setShowCompanyPopup(true);
+    } catch (error) {
+      console.error("Failed to fetch company details:", error);
+      toast.error("Failed to load company details");
+    } finally {
+      setLoadingCompany(false);
     }
   };
 
@@ -225,6 +245,12 @@ const ShowStudents = () => {
   const handleStudentsPerPageChange = (e) => {
     setStudentsPerPage(Number(e.target.value));
     setCurrentPage(1); // Reset to the first page
+  };
+
+  // Close the company popup
+  const closeCompanyPopup = () => {
+    setShowCompanyPopup(false);
+    setCompanyDetails(null);
   };
 
   return (
@@ -459,15 +485,13 @@ const ShowStudents = () => {
                         colSpan="7"
                         className="border border-gray-300 px-4 py-2 text-center"
                       >
-                        <strong>Company:</strong>{" "}
-                        <a
-                          href={student.company}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline"
+                        {/* <strong>Company:</strong>{" "} */}
+                        <button
+                          className="text-blue-600 underline"
+                          onClick={() => fetchCompanyDetails(student.company)}
                         >
-                          {student.company}
-                        </a>
+                          {"Company"}
+                        </button>
                       </td>
                     </tr>
                   )}
@@ -515,6 +539,97 @@ const ShowStudents = () => {
           ))}
         </div>
       </div>
+
+      {/* Company Details Popup */}
+      {showCompanyPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Company Details</h2>
+              <button
+                onClick={closeCompanyPopup}
+                className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {loadingCompany ? (
+              <div className="text-center py-10">
+                <p>Loading company details...</p>
+              </div>
+            ) : companyDetails ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-100 rounded-lg">
+                  <h3 className="text-xl font-bold text-blue-600 mb-2">{companyDetails.name}</h3>
+                  <p className="text-gray-700 mb-2"><strong>Address:</strong> {companyDetails.address}</p>
+                  {/* <p className="text-gray-700 mb-2"><strong>Location:</strong> {companyDetails.location}</p> */}
+                  {companyDetails.website && (
+                    <p className="text-gray-700 mb-2">
+                      <strong>Website:</strong>{" "}
+                      <a href={companyDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                        {companyDetails.website}
+                      </a>
+                    </p>
+                  )}
+                  
+                  {companyDetails.description && (
+                    <div className="mt-4">
+                      <h4 className="font-bold mb-1">Description:</h4>
+                      <p className="text-gray-700">{companyDetails.description}</p>
+                    </div>
+                  )}
+                  
+                  {companyDetails.contactPerson && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded">
+                      <h4 className="font-bold mb-1">Contact Person:</h4>
+                      <p className="text-gray-700"><strong>Name:</strong> {companyDetails.contactPerson.name}</p>
+                      <p className="text-gray-700"><strong>Email:</strong> {companyDetails.contactPerson.email}</p>
+                      <p className="text-gray-700"><strong>Phone:</strong> {companyDetails.contactPerson.phone}</p>
+                      <p className="text-gray-700"><strong>Designation:</strong> {companyDetails.contactPerson.designation}</p>
+                    </div>
+                  )}
+                  
+                  {companyDetails.placementHistory && companyDetails.placementHistory.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-bold mb-2">Placement History:</h4>
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-gray-200">
+                            <th className="border border-gray-300 px-3 py-2 text-left">Year</th>
+                            <th className="border border-gray-300 px-3 py-2 text-left">Students Placed</th>
+                            <th className="border border-gray-300 px-3 py-2 text-left">Avg. Package</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {companyDetails.placementHistory.map((history, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-3 py-2">{history.year}</td>
+                              <td className="border border-gray-300 px-3 py-2">{history.studentsPlaced}</td>
+                              <td className="border border-gray-300 px-3 py-2">{history.averagePackage}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-4">No company details available.</p>
+            )}
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={closeCompanyPopup}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
