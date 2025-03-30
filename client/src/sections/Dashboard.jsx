@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBuilding, FaPlus, FaCheck, FaEdit } from "react-icons/fa"; // Import icons
+import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBuilding, FaPlus, FaCheck, FaEdit, FaTrash } from "react-icons/fa"; // Import icons
 import Button from "../components/Button";
 import Card from "../components/Card";
 import CardContent from "../components/CardContent";
@@ -24,6 +24,7 @@ const Dashboard = ({ token }) => {
   const [newTodoText, setNewTodoText] = useState("");
   const [newTodoDueDate, setNewTodoDueDate] = useState("");
   const [selectedListId, setSelectedListId] = useState(null);
+  const [editingList, setEditingList] = useState(null); // Track which list is being edited
 
   // Fetch data on component mount
   useEffect(() => {
@@ -76,6 +77,13 @@ const Dashboard = ({ token }) => {
       toast.error("Please enter a to-do and due date");
       return;
     }
+
+    console.log("Adding To-Do:", {
+      selectedListId,
+      text: newTodoText,
+      dueDate: newTodoDueDate,
+    });
+
     try {
       const { data } = await axios.post(
         `${API_URL}/dashboard/todo-lists/${selectedListId}/todos`,
@@ -93,6 +101,7 @@ const Dashboard = ({ token }) => {
       setNewTodoDueDate("");
       toast.success("To-Do Added");
     } catch (error) {
+      console.error("Error adding To-Do:", error.response?.data || error.message);
       toast.error("Failed to add to-do");
     }
   };
@@ -139,17 +148,51 @@ const Dashboard = ({ token }) => {
     }
   };
 
-  // Update List Name
-  const updateListName = async (listId, newName) => {
+  // Delete a To-Do List
+  const deleteTodoList = async (listId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this list? This action cannot be undone."
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`${API_URL}/dashboard/todo-lists/${listId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTodoLists((prev) => prev.filter((list) => list._id !== listId));
+      toast.success("To-Do List Deleted");
+    } catch (error) {
+      toast.error("Failed to delete to-do list");
+    }
+  };
+
+  // Handle list name input changes
+  const handleListNameChange = (listId, newName) => {
+    setTodoLists((prev) =>
+      prev.map((list) =>
+        list._id === listId ? { ...list, title: newName } : list
+      )
+    );
+  };
+
+  // Update List Name when Enter key is pressed or input loses focus
+  const updateListName = async (listId, newName, event) => {
+    // Only update on Enter key press or when input loses focus (blur)
+    if (event && event.key !== "Enter" && event.type !== "blur") {
+      return;
+    }
+    
     try {
       const { data } = await axios.put(
         `${API_URL}/dashboard/todo-lists/${listId}`,
         { title: newName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
       setTodoLists((prev) =>
         prev.map((list) => (list._id === listId ? data : list))
       );
+      setEditingList(null); // Clear editing state
       toast.success("List name updated");
     } catch (error) {
       toast.error("Failed to update list name");
@@ -203,7 +246,7 @@ const Dashboard = ({ token }) => {
           <h4 className="text-lg font-semibold text-gray-700 mb-2">Add To-Do</h4>
           <div className="flex items-center space-x-4">
             <select
-              value={selectedListId}
+              value={selectedListId || ""} // Fix for null value
               onChange={(e) => setSelectedListId(e.target.value)}
               className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
@@ -257,15 +300,28 @@ const Dashboard = ({ token }) => {
                 <input
                   type="text"
                   value={list.title}
-                  onChange={(e) => updateListName(list._id, e.target.value)}
+                  onChange={(e) => handleListNameChange(list._id, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      updateListName(list._id, list.title, e);
+                    }
+                  }}
+                  onBlur={(e) => updateListName(list._id, list.title, e)}
+                  onFocus={() => setEditingList(list._id)}
                   className="text-lg font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
                 />
-                <FaEdit className="text-gray-500" />
+                <div className="flex items-center space-x-2">
+                  <FaEdit className="text-gray-500" />
+                  <FaTrash
+                    className="text-red-500 cursor-pointer hover:text-red-700"
+                    onClick={() => deleteTodoList(list._id)}
+                  />
+                </div>
               </div>
               <ul className="mt-4 space-y-2">
-                {list.todos.map((todo) => (
+                {list.todos.map((todo, index) => (
                   <li
-                    key={todo._id}
+                    key={todo._id || `${list._id}-${index}`} // Use todo._id or fallback to a combination of list._id and index
                     className={`p-2 rounded-lg flex justify-between items-center ${
                       todo.completed ? "bg-green-100" : "bg-white"
                     }`}
@@ -304,21 +360,6 @@ const Dashboard = ({ token }) => {
         </div>
       </div>
 
-      {/* Student List */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {students.map((student) => (
-          <Card
-            key={student._id}
-            className="shadow-lg border border-gray-200 p-6 rounded-lg hover:shadow-xl transition-shadow duration-300"
-          >
-            <CardContent>
-              <h3 className="text-xl font-semibold text-gray-800">{student.name}</h3>
-              <p className="text-gray-600">Reg No: {student.regNo}</p>
-              <p className="text-gray-600">Dept: {student.department}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 };
