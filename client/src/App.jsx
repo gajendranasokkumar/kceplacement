@@ -1,12 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Navigate,
 } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import Login from "./sections/Login";
 import Dashboard from "./sections/Dashboard";
 import Upload from "./sections/Upload";
@@ -15,6 +14,9 @@ import NotificationSection from "./sections/NotificationSection"; // Import Noti
 import PrivateRoute from "./routes/PrivateRoute";
 import Navbar from "./components/Navbar";
 import LeetCode from "./sections/LeetCode";
+import SocketListener from "./components/SocketListener"; // Import SocketListener
+import ShowStudents from "./sections/ShowStudents"; // Import ShowStudents component
+import Company from "./sections/Company"; // Import the Company component
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -81,7 +83,22 @@ const App = () => {
               path="/leetcode"
               element={<PrivateRoute token={token} element={<LeetCode />} />}
             />
+            <Route
+              path="/show-students"
+              element={<PrivateRoute token={token} element={<ShowStudents />} />}
+            />
+            <Route
+              path="/company"
+              element={<PrivateRoute token={token} element={<Company />} />} // Add the Company route
+            />
           </Routes>
+
+          {/* Socket Listener */}
+          <SocketListener
+            onNotification={(data) => {
+              toast.success("Excel processing completed!"); // Show a toast notification
+            }}
+          />
         </div>
       </div>
     </Router>

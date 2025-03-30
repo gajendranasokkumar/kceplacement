@@ -8,6 +8,7 @@ const {
   getSections,
   addSection,
   deleteSection,
+  getYears,
 } = require("../services/uploadService"); // Destructure the service functions
 
 const UploadController = {
@@ -95,6 +96,15 @@ const UploadController = {
       res.status(200).json({ message: "Section deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete section" });
+    }
+  },
+
+  async getYears(req, res) {
+    try {
+      const years = await getYears();
+      res.status(200).json(years);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch years" });
     }
   },
 };

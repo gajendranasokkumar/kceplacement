@@ -45,6 +45,15 @@ async function deleteSection(id) {
   return await UploadModel.findByIdAndDelete(id);
 }
 
+async function getBatches() {
+  return await UploadModel.find({ type: "batch" });
+}
+
+// Fetch all years
+async function getYears() {
+  return await UploadModel.find({ type: "year" });
+}
+
 module.exports = {
   getBatches,
   addBatch,
@@ -55,4 +64,6 @@ module.exports = {
   getSections,
   addSection,
   deleteSection,
+  getBatches,
+  getYears,
 };

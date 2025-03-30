@@ -1,40 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { io } from "socket.io-client";
 
-const SocketListener = () => {
-  const [messages, setMessages] = useState([]);
-  const socket = io("wss://echo.websocket.events"); // Replace with your socket server URL
-
+const SocketListener = ({ onNotification }) => {
   useEffect(() => {
-    // Listen for new messages from the socket
-    socket.on("newMessage", (message) => {
-      setMessages((prev) => [...prev, message]);
+    // Replace with your actual backend socket server URL
+    const socket = io("http://localhost:3000", {
+      transports: ["websocket"], // Ensure WebSocket is used
+    });
 
-      // Automatically remove the message after 5 seconds
-      setTimeout(() => {
-        setMessages((prev) => prev.slice(1));
-      }, 5000);
+    // Listen for the `excelProcessingComplete` event
+    socket.on("excelProcessingComplete", (data) => {
+      console.log("Received notification:", data);
+
+      // Pass the notification data to the parent component
+      if (onNotification) {
+        onNotification(data);
+      }
     });
 
     // Cleanup the socket connection on component unmount
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+  }, [onNotification]);
 
-  return (
-    <div className="fixed bottom-4 right-4 space-y-4 z-50">
-      {messages.map((message, index) => (
-        <div
-          key={index}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-4 rounded-lg shadow-lg animate-slide-in"
-        >
-          <p className="font-semibold">{message.title}</p>
-          <p className="text-sm">{message.body}</p>
-        </div>
-      ))}
-    </div>
-  );
+  return null; // This component doesn't render anything
 };
 
 export default SocketListener;
