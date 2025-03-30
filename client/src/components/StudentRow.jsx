@@ -13,8 +13,8 @@ const StudentRow = ({ index, student, stats }) => {
       <td className="px-4 py-2">{student.rollNo}</td>
       <td className="px-4 py-2">{student.name}</td>
       <td className="px-4 py-2 text-center">{student.year}</td>
-      <td className="px-4 py-2 text-center">{student.batch}</td>
-      <td className="px-4 py-2 text-center">{student.classSection}</td>
+      <td className="px-4 py-2 text-center">{student.batchName}</td>
+      <td className="px-4 py-2 text-center">{student.department}</td>
       <td
         className="px-4 py-2 text-center font-bold"
         style={{ backgroundColor: "#d4f8e8" }} // Light green background

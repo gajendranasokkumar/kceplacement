@@ -5,6 +5,7 @@ const path = require("path");
 const routes = require("./routes");
 const { initSocket } = require("./socket");
 const excelQueue = require("./queues/excelQueue");
+const leetcodeRoutes = require("./routes/leetcodeRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -23,6 +24,9 @@ mongoose.connect(dbURI)
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/", routes);
+
+// Register the LeetCode routes
+app.use("/leetcode", leetcodeRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);

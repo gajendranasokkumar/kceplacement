@@ -1,48 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import StudentRow from "../components/StudentRow"; // Import the StudentRow component
+import { useAppContext } from "../context/AppContext";
 
 const LeetCode = () => {
-  // Sample student data with additional fields
-  const [students] = useState([
-    {
-      id: 1,
-      rollNo: "S12345",
-      name: "Alice Johnson",
-      year: "2023",
-      batch: "A",
-      classSection: "CS1",
-      username: "alice123",
-    },
-    {
-      id: 2,
-      rollNo: "S12346",
-      name: "Bob Smith",
-      year: "2023",
-      batch: "B",
-      classSection: "CS2",
-      username: "GajendranA",
-    },
-    {
-      id: 3,
-      rollNo: "S12347",
-      name: "Charlie Brown",
-      year: "2024",
-      batch: "A",
-      classSection: "CS1",
-      username: "charliebrown",
-    },
-    {
-      id: 4,
-      rollNo: "S12348",
-      name: "Diana Prince",
-      year: "2024",
-      batch: "B",
-      classSection: "CS2",
-      username: "dianap",
-    },
-  ]);
-
+  const { API_URL } = useAppContext();
+  const [students, setStudents] = useState([]); // Fetch students from backend
   const [stats, setStats] = useState({});
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [isFiltered, setIsFiltered] = useState(false); // Track if filtering has been applied
@@ -52,19 +15,99 @@ const LeetCode = () => {
   const [selectedBatch, setSelectedBatch] = useState("");
   const [selectedClassSection, setSelectedClassSection] = useState("");
 
+  const [years, setYears] = useState([]); // State for years
+  const [batches, setBatches] = useState([]); // State for batches
+
+  useEffect(() => {
+    // Fetch years and batches from the backend
+    const fetchFilters = async () => {
+      try {
+        const [yearResponse, batchResponse] = await Promise.all([
+          axios.get(`${API_URL}/upload/years`), // Backend endpoint for years
+          axios.get(`${API_URL}/upload/batches`), // Backend endpoint for batches
+        ]);
+        setYears(Array.isArray(yearResponse.data) ? yearResponse.data : []); // Ensure years is an array
+        setBatches(Array.isArray(batchResponse.data) ? batchResponse.data : []); // Ensure batches is an array
+      } catch (error) {
+        console.error("Failed to fetch filters", error);
+        setYears([]); // Fallback to an empty array
+        setBatches([]); // Fallback to an empty array
+      }
+    };
+
+    fetchFilters();
+  }, []);
+
+  const handleFilter = async () => {
+    try {
+      const query = [];
+      if (selectedYear) query.push(`year=${selectedYear}`);
+      if (selectedBatch) query.push(`batch=${selectedBatch}`);
+      const queryString = query.length > 0 ? `?${query.join("&")}` : "";
+
+      const { data } = await axios.get(`${API_URL}/students${queryString}`); // Fetch students based on filters
+      setStudents(data);
+      setFilteredStudents(data);
+      setIsFiltered(true); // Mark that filtering has been applied
+    } catch (error) {
+      console.error("Failed to fetch students", error);
+      setStudents([]);
+      setFilteredStudents([]);
+      setIsFiltered(true); // Mark that filtering has been applied even if no data is fetched
+    }
+  };
+
   useEffect(() => {
     if (isFiltered) {
       const fetchStats = async () => {
         const newStats = {};
         for (const student of filteredStudents) {
           try {
-            const { data } = await axios.get(
-              `https://leetcode-stats-api.herokuapp.com/${student.username}`
+            // Extract the username from the leetcodeUsername link
+            const urlParts = student.leetcodeUsername.replace(/\/$/, "").split("/");
+            const username = urlParts[urlParts.length - 1]; // Get the last part of the URL
+
+            console.log(`Fetching stats for ${username}`);
+
+            // GraphQL query to fetch LeetCode statistics
+            const query = `
+              query getUserProfile($username: String!) {
+                matchedUser(username: $username) {
+                  username
+                  submitStatsGlobal {
+                    acSubmissionNum {
+                      difficulty
+                      count
+                    }
+                  }
+                }
+              }
+            `;
+
+            // Make a POST request to the backend proxy
+            const { data } = await axios.post(`${API_URL}/leetcode/graphql`, {
+              query,
+              variables: { username },
+            });
+
+            // Parse the response to extract statistics
+            const stats = data.data.matchedUser.submitStatsGlobal.acSubmissionNum.reduce(
+              (acc, item) => {
+                if (item.difficulty === "Easy") acc.easySolved = item.count;
+                if (item.difficulty === "Medium") acc.mediumSolved = item.count;
+                if (item.difficulty === "Hard") acc.hardSolved = item.count;
+                return acc;
+              },
+              { easySolved: 0, mediumSolved: 0, hardSolved: 0 }
             );
-            newStats[student.id] = data;
+
+            stats.totalSolved =
+              stats.easySolved + stats.mediumSolved + stats.hardSolved;
+
+            newStats[student._id] = stats;
           } catch (error) {
-            console.error(`Failed to fetch stats for ${student.username}`, error);
-            newStats[student.id] = {
+            console.error(`Failed to fetch stats for ${student.leetcodeUsername}`, error);
+            newStats[student._id] = {
               totalSolved: 0,
               easySolved: 0,
               mediumSolved: 0,
@@ -79,19 +122,6 @@ const LeetCode = () => {
     }
   }, [filteredStudents, isFiltered]);
 
-  // Filter students based on selected criteria
-  const handleFilter = () => {
-    const filtered = students.filter((student) => {
-      return (
-        (selectedYear === "" || student.year === selectedYear) &&
-        (selectedBatch === "" || student.batch === selectedBatch) &&
-        (selectedClassSection === "" || student.classSection === selectedClassSection)
-      );
-    });
-    setFilteredStudents(filtered);
-    setIsFiltered(true); // Mark that filtering has been applied
-  };
-
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-700 mb-6">LeetCode Statistics</h1>
@@ -105,8 +135,11 @@ const LeetCode = () => {
           className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Select Year</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
+          {years.map((year) => (
+            <option key={year._id} value={year.name}>
+              {year.name}
+            </option>
+          ))}
         </select>
 
         {/* Batch Dropdown */}
@@ -116,8 +149,11 @@ const LeetCode = () => {
           className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Select Batch</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
+          {batches.map((batch) => (
+            <option key={batch._id} value={batch.name}>
+              {batch.name}
+            </option>
+          ))}
         </select>
 
         {/* Class Section Dropdown */}
@@ -151,7 +187,7 @@ const LeetCode = () => {
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-center">Year</th>
                 <th className="px-4 py-2 text-center">Batch</th>
-                <th className="px-4 py-2 text-center">Class Section</th>
+                <th className="px-4 py-2 text-center">Department</th>
                 <th className="px-4 py-2 text-center">Easy</th>
                 <th className="px-4 py-2 text-center">Medium</th>
                 <th className="px-4 py-2 text-center">Hard</th>
@@ -161,10 +197,10 @@ const LeetCode = () => {
             <tbody>
               {filteredStudents.map((student, index) => (
                 <StudentRow
-                  key={student.id}
+                  key={student._id}
                   index={index}
                   student={student}
-                  stats={stats[student.id] || {}}
+                  stats={stats[student._id] || {}}
                 />
               ))}
             </tbody>
