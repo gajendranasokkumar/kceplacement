@@ -174,10 +174,10 @@ const Upload = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 p-8">
       {/* Socket Listener Component */}
-      <SocketListener 
+      {/* <SocketListener 
         eventName="uploadProgress" 
         onMessage={() => {}} 
-      />
+      /> */}
       
       <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">
         Upload Section

@@ -146,7 +146,7 @@ const App = () => {
           </Routes>
 
           {/* Socket Listener */}
-          <SocketListener onNotification={handleNotification} />
+          {/* <SocketListener onNotification={handleNotification} /> */}
 
           {/* Custom Notification */}
           {notification && (
