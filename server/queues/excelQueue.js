@@ -1,10 +1,22 @@
 const Queue = require("bull");
+const Redis = require("ioredis"); // Import ioredis for advanced Redis configuration
 const { processStudentData } = require("../services/studentService");
 const NotificationModel = require("../models/NotificationModel");
 const { getSocket } = require("../socket");
 
+// Configure Redis connection
+const redisConnection = new Redis({
+  port: 6379, // Default Redis port
+  host: "oregon-redis.render.com", // Redis host (without protocol)
+  username: "red-cu5k720gph6c73btg550", // Render Redis uses "default" as the username
+  password: "gFaP987WJqMyu3CJCVdL4lqEYsigRzba", // Replace with your actual Redis password
+  tls: {}, // Enables SSL/TLS for secure connection
+  maxRetriesPerRequest: null, // Prevents retries for failed requests
+});
+
+// Initialize the Bull queue with the Redis connection
 const excelQueue = new Queue("studentQueue", {
-  redis: { port: 6379, host: "127.0.0.1" }
+  redis: redisConnection, // Use the Redis connection options
 });
 
 const requestJobTracker = new Map(); // Track jobs by requestId
@@ -22,18 +34,13 @@ excelQueue.process(async (job) => {
 excelQueue.on("completed", async (job) => {
   const { requestId, userId } = job.data;
 
-  // Ensure tracker exists for the requestId
   if (!requestJobTracker.has(requestId)) return;
 
   const tracker = requestJobTracker.get(requestId);
   tracker.completed++;
 
-  // Check if all jobs (completed + failed) for the requestId are processed
-  console.log('Completed:', tracker.completed, 'Failed:', tracker.errors.length, 'Total:', tracker.total);
-  
   if (tracker.completed + tracker.errors.length === tracker.total) {
     try {
-      // console.log(tracker.errors);
       const notification = await NotificationModel.create({
         userId,
         title: "Excel Processing Completed",
@@ -42,7 +49,6 @@ excelQueue.on("completed", async (job) => {
       });
       console.log("Notification created:", notification._id);
 
-      // Emit socket event
       const io = getSocket();
       io.to(userId).emit("excelProcessingComplete", {
         successCount: tracker.completed,
@@ -52,27 +58,21 @@ excelQueue.on("completed", async (job) => {
     } catch (error) {
       console.error("Error creating notification:", error);
     } finally {
-      requestJobTracker.delete(requestId); // Clean up tracker
+      requestJobTracker.delete(requestId);
     }
   }
 });
 
 excelQueue.on("failed", async (job, error) => {
-  const { requestId, name, rollNo, department, leetcodeUsername, year, batchName } = job.data; // Extract the row data from the job
+  const { requestId, name, rollNo, department, leetcodeUsername, year, batchName } = job.data;
 
-  // Ensure tracker exists for the requestId
   if (!requestJobTracker.has(requestId)) return;
 
   const tracker = requestJobTracker.get(requestId);
-  // console.log("Row data:", job.data); // Log the row data for debugging
-  tracker.errors.push({ row: { name, rollNo, department, leetcodeUsername, year, batchName }, error: error.message }); // Include the row data in the error
-
-  // Check if all jobs (completed + failed) for the requestId are processed
-  console.log('Completed:', tracker.completed, 'Failed:', tracker.errors.length, 'Total:', tracker.total);
+  tracker.errors.push({ row: { name, rollNo, department, leetcodeUsername, year, batchName }, error: error.message });
 
   if (tracker.completed + tracker.errors.length === tracker.total) {
     try {
-      // console.log(tracker);
       const notification = await NotificationModel.create({
         userId: job.data.userId,
         title: "Excel Processing Completed",
@@ -81,7 +81,6 @@ excelQueue.on("failed", async (job, error) => {
       });
       console.log("Notification created: -> ", notification._id);
 
-      // Emit socket event
       const io = getSocket();
       io.to(job.data.userId).emit("excelProcessingComplete", {
         successCount: tracker.completed,
@@ -91,7 +90,7 @@ excelQueue.on("failed", async (job, error) => {
     } catch (error) {
       console.error("Error creating notification:", error);
     } finally {
-      requestJobTracker.delete(requestId); // Clean up tracker
+      requestJobTracker.delete(requestId);
     }
   }
 });
