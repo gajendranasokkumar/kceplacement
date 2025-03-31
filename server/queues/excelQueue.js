@@ -64,7 +64,7 @@ excelQueue.on("failed", async (job, error) => {
   if (!requestJobTracker.has(requestId)) return;
 
   const tracker = requestJobTracker.get(requestId);
-  console.log("Row data:", job.data); // Log the row data for debugging
+  // console.log("Row data:", job.data); // Log the row data for debugging
   tracker.errors.push({ row: { name, rollNo, department, leetcodeUsername, year, batchName }, error: error.message }); // Include the row data in the error
 
   // Check if all jobs (completed + failed) for the requestId are processed
