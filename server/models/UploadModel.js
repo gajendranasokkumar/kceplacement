@@ -11,7 +11,6 @@ const uploadSchema = new Schema(
     name: {
       type: String,
       required: true,
-      unique: true, // Ensure names are unique
       trim: true,
     },
   },
