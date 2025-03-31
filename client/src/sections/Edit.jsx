@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useAppContext } from "../context/AppContext";
+import { useApi } from "../api/api"; // Import useApi
 import Popup from "../components/Popup"; // Import Popup component
 import DeletedPopup from "../components/DeletedPopup"; // Import DeletedPopup component
 
 const Edit = () => {
-  const { API_URL } = useAppContext();
+  const api = useApi(); // Use the configured Axios instance
   const navigate = useNavigate();
 
   const [batches, setBatches] = useState([]);
@@ -23,7 +23,7 @@ const Edit = () => {
 
   const fetchBatches = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/upload/batches`);
+      const { data } = await api.get("/upload/batches");
       setBatches(data);
     } catch (error) {
       console.error("Failed to fetch batches:", error);
@@ -32,7 +32,7 @@ const Edit = () => {
 
   const fetchYears = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/upload/years`);
+      const { data } = await api.get("/upload/years");
       setYears(data);
     } catch (error) {
       console.error("Failed to fetch years:", error);
@@ -55,7 +55,7 @@ const Edit = () => {
     const { type, name } = deleteTarget;
 
     try {
-      const { data } = await axios.delete(`${API_URL}/students`, {
+      const { data } = await api.delete("/students", {
         params: { [type]: name },
       });
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
+import { useApi } from "../api/api"; // Import useApi utility
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
 import { FaEdit, FaSave, FaTimes } from "react-icons/fa"; // Added FaTimes for close button
 
 const ShowStudents = () => {
   const { API_URL } = useAppContext();
+  const api = useApi(); // Get the configured Axios instance
   const [searchParams] = useSearchParams();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]); // Filtered students
@@ -45,9 +46,7 @@ const ShowStudents = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(
-        `${API_URL}/students?${batch ? `batch=${batch}` : `year=${year}`}`
-      );
+      const { data } = await api.get(`/students?${batch ? `batch=${batch}` : `year=${year}`}`);
       setStudents(data);
       setFilteredStudents(data); // Initialize filtered students
     } catch (error) {
@@ -59,7 +58,7 @@ const ShowStudents = () => {
 
   const fetchFilters = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/students/filters`);
+      const { data } = await api.get("/students/filters");
       setDepartments(data.departments);
       setBatches(data.batches);
     } catch (error) {
@@ -69,7 +68,7 @@ const ShowStudents = () => {
 
   const fetchCompanies = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/companies`); // Fetch available companies
+      const { data } = await api.get("/companies"); // Fetch available companies
       setCompanies(data);
     } catch (error) {
       console.error("Failed to fetch companies:", error);
@@ -80,7 +79,7 @@ const ShowStudents = () => {
   const fetchCompanyDetails = async (companyId) => {
     try {
       setLoadingCompany(true);
-      const { data } = await axios.get(`${API_URL}/companies/${companyId}`);
+      const { data } = await api.get(`/companies/${companyId}`);
       setCompanyDetails(data);
       setShowCompanyPopup(true);
     } catch (error) {
@@ -139,7 +138,7 @@ const ShowStudents = () => {
     }
 
     try {
-      const { data } = await axios.put(`${API_URL}/students/update-batch`, {
+      const { data } = await api.put("/students/update-batch", {
         studentIds: selectedStudents,
         batchName,
       });
@@ -167,7 +166,7 @@ const ShowStudents = () => {
     }
 
     try {
-      const { data } = await axios.put(`${API_URL}/students/update-placement`, {
+      const { data } = await api.put("/students/update-placement", {
         studentIds: selectedStudents, // Array of student ObjectIds
         companyName: selectedCompany, // Company ObjectId
       });
@@ -190,7 +189,7 @@ const ShowStudents = () => {
     }
 
     try {
-      const { data } = await axios.put(`${API_URL}/students/remove-company`, {
+      const { data } = await api.put("/students/remove-company", {
         studentIds: selectedStudents, // Array of student ObjectIds
       });
 
@@ -215,10 +214,7 @@ const ShowStudents = () => {
 
   const handleSaveClick = async () => {
     try {
-      const { data } = await axios.put(
-        `${API_URL}/students/${editingStudentId}`,
-        editedStudent
-      ); // Update the student in the backend
+      const { data } = await api.put(`/students/${editingStudentId}`, editedStudent); // Update the student in the backend
       toast.success(data.message);
       fetchStudents(); // Refresh the student list
       setEditingStudentId(null); // Exit edit mode

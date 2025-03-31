@@ -1,72 +1,62 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useAppContext } from "../context/AppContext"; // Import the context for API URL
+import { useApi } from "../api/api"; // Import the API utility
 import SocketListener from "../components/SocketListener"; // Import the existing SocketListener
 
 const Upload = () => {
-  const { API_URL } = useAppContext(); // Access the centralized API URL
+  const api = useApi(); // Get the configured Axios instance
   const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false); // Track upload progress
-  const [notifications, setNotifications] = useState([]); // Store notifications
+  const [uploading, setUploading] = useState(false);
 
-  // CRUD states for Batches, Class, and Section
   const [batches, setBatches] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [sections, setSections] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [years, setYears] = useState([]);
 
   const [newBatch, setNewBatch] = useState("");
-  const [newClass, setNewClass] = useState("");
-  const [newSection, setNewSection] = useState("");
+  const [newDepartment, setNewDepartment] = useState("");
+  const [newYear, setNewYear] = useState("");
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchBatches();
-    fetchClasses();
-    fetchSections();
+    fetchDepartments();
+    fetchYears();
   }, []);
 
-  // Fetch Batches
   const fetchBatches = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/upload/batches`);
+      const { data } = await api.get("/upload/batches");  
       setBatches(data);
     } catch (error) {
       toast.error("Failed to fetch batches");
     }
   };
 
-  // Fetch Classes
-  const fetchClasses = async () => {
+  const fetchDepartments = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/upload/classes`);
-      setClasses(data);
+      const { data } = await api.get("/upload/departments");
+      setDepartments(data);
     } catch (error) {
-      toast.error("Failed to fetch classes");
+      toast.error("Failed to fetch departments");
     }
   };
 
-  // Fetch Sections
-  const fetchSections = async () => {
+  const fetchYears = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/upload/sections`);
-      setSections(data);
+      const { data } = await api.get("/upload/years");
+      setYears(data);
     } catch (error) {
-      toast.error("Failed to fetch sections");
+      toast.error("Failed to fetch years");
     }
   };
 
-  // Add Batch
   const addBatch = async () => {
     if (!newBatch.trim()) {
       toast.error("Batch name cannot be empty");
       return;
     }
     try {
-      const { data } = await axios.post(`${API_URL}/upload/batches`, {
-        name: newBatch,
-      });
+      const { data } = await api.post("/upload/batches", { name: newBatch });
       setBatches([...batches, data]);
       setNewBatch("");
       toast.success("Batch added successfully");
@@ -75,10 +65,9 @@ const Upload = () => {
     }
   };
 
-  // Delete Batch
   const deleteBatch = async (id) => {
     try {
-      await axios.delete(`${API_URL}/upload/batches/${id}`);
+      await api.delete(`/upload/batches/${id}`);
       setBatches(batches.filter((batch) => batch._id !== id));
       toast.success("Batch deleted successfully");
     } catch (error) {
@@ -86,65 +75,56 @@ const Upload = () => {
     }
   };
 
-  // Add Class
-  const addClass = async () => {
-    if (!newClass.trim()) {
-      toast.error("Class name cannot be empty");
+  const addDepartment = async () => {
+    if (!newDepartment.trim()) {
+      toast.error("Department name cannot be empty");
       return;
     }
     try {
-      const { data } = await axios.post(`${API_URL}/upload/classes`, {
-        name: newClass,
-      });
-      setClasses([...classes, data]);
-      setNewClass("");
-      toast.success("Class added successfully");
+      const { data } = await api.post("/upload/departments", { name: newDepartment });
+      setDepartments([...departments, data]);
+      setNewDepartment("");
+      toast.success("Department added successfully");
     } catch (error) {
-      toast.error("Failed to add class");
+      toast.error("Failed to add department");
     }
   };
 
-  // Delete Class
-  const deleteClass = async (id) => {
+  const deleteDepartment = async (id) => {
     try {
-      await axios.delete(`${API_URL}/upload/classes/${id}`);
-      setClasses(classes.filter((cls) => cls._id !== id));
-      toast.success("Class deleted successfully");
+      await api.delete(`/upload/departments/${id}`);
+      setDepartments(departments.filter((dept) => dept._id !== id));
+      toast.success("Department deleted successfully");
     } catch (error) {
-      toast.error("Failed to delete class");
+      toast.error("Failed to delete department");
     }
   };
 
-  // Add Section
-  const addSection = async () => {
-    if (!newSection.trim()) {
-      toast.error("Section name cannot be empty");
+  const addYear = async () => {
+    if (!newYear.trim()) {
+      toast.error("Year name cannot be empty");
       return;
     }
     try {
-      const { data } = await axios.post(`${API_URL}/upload/sections`, {
-        name: newSection,
-      });
-      setSections([...sections, data]);
-      setNewSection("");
-      toast.success("Section added successfully");
+      const { data } = await api.post("/upload/years", { name: newYear });
+      setYears([...years, data]);
+      setNewYear("");
+      toast.success("Year added successfully");
     } catch (error) {
-      toast.error("Failed to add section");
+      toast.error("Failed to add year");
     }
   };
 
-  // Delete Section
-  const deleteSection = async (id) => {
+  const deleteYear = async (id) => {
     try {
-      await axios.delete(`${API_URL}/upload/sections/${id}`);
-      setSections(sections.filter((section) => section._id !== id));
-      toast.success("Section deleted successfully");
+      await api.delete(`/upload/years/${id}`);
+      setYears(years.filter((year) => year._id !== id));
+      toast.success("Year deleted successfully");
     } catch (error) {
-      toast.error("Failed to delete section");
+      toast.error("Failed to delete year");
     }
   };
 
-  // Handle file selection
   const handleFileSelect = (event) => {
     const files = event.target.files || event.dataTransfer.files;
     if (files.length > 0) {
@@ -152,7 +132,6 @@ const Upload = () => {
     }
   };
 
-  // Handle file upload
   const handleFileUpload = async () => {
     if (!selectedFile) {
       toast.error("Please select a file to upload");
@@ -161,19 +140,15 @@ const Upload = () => {
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("userId", "user123"); // Replace with actual user ID
+    formData.append("userId", "user123");
 
     try {
       setUploading(true);
-      const response = await axios.post(
-        `${API_URL}/upload/upload-excel`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await api.post("/upload/upload-excel", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       toast.success(response.data.message);
-      setSelectedFile(null); // Clear the selected file after upload
+      setSelectedFile(null);
     } catch (error) {
       toast.error("Failed to upload file");
     } finally {
@@ -181,7 +156,6 @@ const Upload = () => {
     }
   };
 
-  // Handle drag-and-drop events
   const handleDragOver = (event) => {
     event.preventDefault();
     setDragging(true);
@@ -197,29 +171,12 @@ const Upload = () => {
     handleFileSelect(event);
   };
 
-  // Handle socket notifications
-  const handleSocketNotification = (data) => {
-    // Add toast notification for real-time feedback
-    if (data.successCount > 0) {
-      toast.success(`Successfully processed ${data.successCount} records`);
-    }
-    if (data.failureCount > 0) {
-      toast.error(`Failed to process ${data.failureCount} records`);
-    }
-    
-    // Add notification to the state
-    setNotifications((prev) => [...prev, {
-      ...data,
-      timestamp: new Date().toLocaleString() // Add timestamp to notification
-    }]);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 p-8">
       {/* Socket Listener Component */}
       <SocketListener 
         eventName="uploadProgress" 
-        onMessage={handleSocketNotification} 
+        onMessage={() => {}} 
       />
       
       <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">
@@ -272,44 +229,7 @@ const Upload = () => {
           </button>
         </div>
       </div>
-      {/* Notifications Section */}
-      <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8 mb-10">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Notifications</h2>
-        {notifications.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {notifications.map((notification, index) => (
-              <li key={index} className="py-4">
-                <div className="flex justify-between">
-                  <p className="text-gray-700">
-                    <strong>Success:</strong> {notification.successCount},{" "}
-                    <strong>Failures:</strong> {notification.failureCount}
-                  </p>
-                  <span className="text-sm text-gray-500">{notification.timestamp}</span>
-                </div>
-                {notification.failureDocuments && notification.failureDocuments.length > 0 && (
-                  <details className="mt-2">
-                    <summary className="text-blue-500 cursor-pointer font-medium">
-                      View {notification.failureDocuments.length} Failure Details
-                    </summary>
-                    <div className="mt-2 pl-4 border-l-2 border-red-200">
-                      <ul className="space-y-2">
-                        {notification.failureDocuments.map((doc, idx) => (
-                          <li key={idx} className="text-sm bg-red-50 p-2 rounded">
-                            <strong>Row:</strong> {JSON.stringify(doc.row)}<br />
-                            <strong>Error:</strong> <span className="text-red-600">{doc.error}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </details>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No notifications yet.</p>
-        )}
-      </div>
+
       {/* CRUD Operations */}
       <div className="w-full max-w-7xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
@@ -356,32 +276,35 @@ const Upload = () => {
             </ul>
           </div>
 
-          {/* Classes Section */}
+          {/* Departments Section */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-4 text-gray-700">
-              Classes
+              Departments
             </h3>
             <div className="flex items-center gap-4 mb-4">
               <input
                 type="text"
-                value={newClass}
-                onChange={(e) => setNewClass(e.target.value)}
-                placeholder="Add new class"
+                value={newDepartment}
+                onChange={(e) => setNewDepartment(e.target.value)}
+                placeholder="Add new department"
                 className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
               />
               <button
-                onClick={addClass}
+                onClick={addDepartment}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
               >
                 Add
               </button>
             </div>
             <ul className="list-disc pl-6">
-              {classes.map((cls) => (
-                <li key={cls._id} className="flex justify-between items-center mb-2">
-                  <span>{cls.name}</span>
+              {departments.map((dept) => (
+                <li
+                  key={dept._id}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{dept.name}</span>
                   <button
-                    onClick={() => deleteClass(cls._id)}
+                    onClick={() => deleteDepartment(dept._id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete
@@ -391,35 +314,35 @@ const Upload = () => {
             </ul>
           </div>
 
-          {/* Sections Section */}
+          {/* Years Section */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-4 text-gray-700">
-              Sections
+              Years
             </h3>
             <div className="flex items-center gap-4 mb-4">
               <input
                 type="text"
-                value={newSection}
-                onChange={(e) => setNewSection(e.target.value)}
-                placeholder="Add new section"
+                value={newYear}
+                onChange={(e) => setNewYear(e.target.value)}
+                placeholder="Add new year"
                 className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
               />
               <button
-                onClick={addSection}
+                onClick={addYear}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
               >
                 Add
               </button>
             </div>
             <ul className="list-disc pl-6">
-              {sections.map((section) => (
+              {years.map((year) => (
                 <li
-                  key={section._id}
+                  key={year._id}
                   className="flex justify-between items-center mb-2"
                 >
-                  <span>{section.name}</span>
+                  <span>{year.name}</span>
                   <button
-                    onClick={() => deleteSection(section._id)}
+                    onClick={() => deleteYear(year._id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete

@@ -11,7 +11,7 @@ import Dashboard from "./sections/Dashboard";
 import Upload from "./sections/Upload";
 import Edit from "./sections/Edit";
 import NotificationSection from "./sections/NotificationSection"; // Import NotificationSection
-import PrivateRoute from "./routes/PrivateRoute";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 import Navbar from "./components/Navbar";
 import LeetCode from "./sections/LeetCode";
 import SocketListener from "./components/SocketListener"; // Import SocketListener
@@ -33,17 +33,29 @@ const App = () => {
     localStorage.setItem("navbarState", JSON.stringify(isNavbarOpen));
   }, [isNavbarOpen]);
 
+  useEffect(() => {
+    if (!token) {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
   return (
     <Router>
       <Toaster />
       <div className="flex">
-        {/* Navbar */}
-        {token || <Navbar isOpen={isNavbarOpen} setIsOpen={setIsNavbarOpen} />}
+        {/* Conditionally render Navbar */}
+        {token && (
+          <Navbar
+            isOpen={isNavbarOpen}
+            setIsNavbarOpen={setIsNavbarOpen}
+            setToken={setToken}
+          />
+        )}
 
         {/* Main Content */}
         <div
           className={`flex-1 transition-all duration-500 ${
-            isNavbarOpen ? "ml-64" : "ml-16"
+            token && isNavbarOpen ? "ml-64" : token ? "ml-20" : "ml-0"
           }`}
         >
           <Routes>
@@ -60,41 +72,66 @@ const App = () => {
             <Route
               path="/dashboard"
               element={
-                <PrivateRoute
-                  token={token}
-                  element={<Dashboard token={token} />}
-                />
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/upload"
-              element={<PrivateRoute token={token} element={<Upload />} />}
+              element={
+                <ProtectedRoute>
+                  <Upload />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/edit"
-              element={<PrivateRoute token={token} element={<Edit />} />}
+              element={
+                <ProtectedRoute>
+                  <Edit />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/notifications"
               element={
-                <PrivateRoute token={token} element={<NotificationSection />} />
+                <ProtectedRoute>
+                  <NotificationSection />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/leetcode"
-              element={<PrivateRoute token={token} element={<LeetCode />} />}
+              element={
+                <ProtectedRoute>
+                  <LeetCode />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/show-students"
-              element={<PrivateRoute token={token} element={<ShowStudents />} />}
+              element={
+                <ProtectedRoute>
+                  <ShowStudents />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/company"
-              element={<PrivateRoute token={token} element={<Company />} />} // Add the Company route
+              element={
+                <ProtectedRoute>
+                  <Company />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/help"
-              element={<PrivateRoute token={token} element={<HelpSection />} />}
+              element={
+                <ProtectedRoute>
+                  <HelpSection />
+                </ProtectedRoute>
+              }
             />
           </Routes>
 

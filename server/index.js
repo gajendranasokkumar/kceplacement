@@ -6,6 +6,8 @@ const routes = require("./routes");
 const { initSocket } = require("./socket");
 const excelQueue = require("./queues/excelQueue");
 const leetcodeRoutes = require("./routes/leetcodeRoutes");
+const authRoutes = require("./routes/authRoutes");
+const { verifyAdmin } = require("./middlewares/authMiddleware");
 require("dotenv").config();
 
 const app = express();
@@ -23,9 +25,15 @@ mongoose.connect(dbURI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.use("/", routes);
+// Protected routes
+app.use("/upload", verifyAdmin, routes.uploadRoutes);
+app.use("/dashboard", verifyAdmin, routes.dashboardRoutes);
+app.use("/notifications", verifyAdmin, routes.notificationRoutes);
+app.use("/students", verifyAdmin, routes.studentRoutes);
+app.use("/companies", verifyAdmin, routes.companyRoutes);
 
-// Register the LeetCode routes
+// Public routes
+app.use("/auth", authRoutes);
 app.use("/leetcode", leetcodeRoutes);
 
 app.use((err, req, res, next) => {

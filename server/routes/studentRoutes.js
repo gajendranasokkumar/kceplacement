@@ -3,9 +3,10 @@ const router = express.Router();
 const StudentModel = require("../models/StudentModel");
 const UploadModel = require("../models/UploadModel");
 const mongoose = require("mongoose");
+const authenticate = require("../middlewares/authenticate"); // Import authentication middleware
 
 // Fetch students by batch or year
-router.get("/", async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
   const { batch, year, department } = req.query;
 
   try {
@@ -25,7 +26,7 @@ router.get("/", async (req, res) => {
 });
 
 // Bulk update isPlaced and assign company
-router.put("/update-placement", async (req, res) => {
+router.put("/update-placement", authenticate, async (req, res) => {
   const { studentIds, companyName } = req.body;
 
 
@@ -55,7 +56,7 @@ router.put("/update-placement", async (req, res) => {
 });
 
 // Remove company for selected students
-router.put("/remove-company", async (req, res) => {
+router.put("/remove-company", authenticate, async (req, res) => {
   const { studentIds } = req.body;
 
   if (!studentIds || studentIds.length === 0) {
@@ -79,7 +80,7 @@ router.put("/remove-company", async (req, res) => {
 });
 
 // Update batch for multiple students
-router.put("/update-batch", async (req, res) => {
+router.put("/update-batch", authenticate, async (req, res) => {
   const { studentIds, batchName } = req.body;
 
   if (!studentIds || !batchName) {
@@ -110,7 +111,7 @@ router.put("/update-batch", async (req, res) => {
 });
 
 // Delete students by batch or year
-router.delete("/", async (req, res) => {
+router.delete("/", authenticate, async (req, res) => {
   const { batch, year } = req.query;
 
   try {
@@ -146,7 +147,7 @@ router.delete("/", async (req, res) => {
 });
 
 // Fetch unique departments and batches
-router.get("/filters", async (req, res) => {
+router.get("/filters", authenticate, async (req, res) => {
   try {
     const departments = await StudentModel.distinct("department");
     const batches = await StudentModel.distinct("batchName");
@@ -159,7 +160,7 @@ router.get("/filters", async (req, res) => {
 });
 
 // Update a student's details
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const { name, rollNo, department, batchName, year } = req.body;
 

@@ -8,14 +8,12 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // callback(new Error("Not allowed by CORS"));
-      callback(null, true);
+      callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS", 
-  allowedHeaders: "Content-Type, Authorization",
-  credentials: false, // Enable cookies to be sent
+  methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+  allowedHeaders: "Content-Type, Authorization", // Ensure Authorization is allowed
+  credentials: true, // Enable cookies to be sent
 };
 
 module.exports = cors(corsOptions);
-        

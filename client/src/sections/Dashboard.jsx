@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBuilding, FaPlus, FaCheck, FaEdit, FaTrash, FaCheckCircle, FaLayerGroup, FaCalendarAlt } from "react-icons/fa"; // Import icons
 import Button from "../components/Button";
@@ -7,11 +6,13 @@ import Card from "../components/Card";
 import CardContent from "../components/CardContent";
 import Input from "../components/Input";
 import { useAppContext } from "../context/AppContext"; // Import the context
+import { useApi } from "../api/api"; // Import useApi
 
 const Dashboard = ({ token }) => {
+  const api = useApi(); // Use the configured Axios instance
   const { API_URL } = useAppContext(); // Access the API URL from context
   const [students, setStudents] = useState([]);
-  const [userName, setUserName] = useState("John Doe"); // Example user name
+  const [userName, setUserName] = useState("Admin"); // Example user name
   const [statistics, setStatistics] = useState({
     totalStudents: 0,
     totalTeachers: 0,
@@ -33,7 +34,7 @@ const Dashboard = ({ token }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/dashboard/students`, {
+        const { data } = await api.get(`/dashboard/students`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStudents(data);
@@ -48,7 +49,7 @@ const Dashboard = ({ token }) => {
 
     const fetchStatistics = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/dashboard/statistics`, {
+        const { data } = await api.get(`/dashboard/statistics`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStatistics(data);
@@ -59,7 +60,7 @@ const Dashboard = ({ token }) => {
 
     const fetchTodoLists = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/dashboard/todo-lists`, {
+        const { data } = await api.get(`/dashboard/todo-lists`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTodoLists(data);
@@ -72,7 +73,7 @@ const Dashboard = ({ token }) => {
     fetchStudents();
     fetchStatistics();
     fetchTodoLists();
-  }, [API_URL, token]);
+  }, [api, token]);
 
   // Add a new To-Do
   const addTodo = async () => {
@@ -88,8 +89,8 @@ const Dashboard = ({ token }) => {
     });
 
     try {
-      const { data } = await axios.post(
-        `${API_URL}/dashboard/todo-lists/${selectedListId}/todos`,
+      const { data } = await api.post(
+        `/dashboard/todo-lists/${selectedListId}/todos`,
         { text: newTodoText, dueDate: newTodoDueDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -112,10 +113,11 @@ const Dashboard = ({ token }) => {
   // Toggle To-Do Completion
   const toggleTodoCompletion = async (listId, todoId, completed) => {
     try {
-      const { data } = await axios.put(
-        `${API_URL}/dashboard/todo-lists/${listId}/todos/${todoId}`,
+      const { data } = await api.put(
+        `/dashboard/todo-lists/${listId}/todos/${todoId}`,
         { completed },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` }
+        }
       );
       setTodoLists((prev) =>
         prev.map((list) =>
@@ -138,8 +140,8 @@ const Dashboard = ({ token }) => {
   // Add a new To-Do List
   const addTodoList = async () => {
     try {
-      const { data } = await axios.post(
-        `${API_URL}/dashboard/todo-lists`,
+      const { data } = await api.post(
+        `/dashboard/todo-lists`,
         { title: `New List ${todoLists.length + 1}` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -159,7 +161,7 @@ const Dashboard = ({ token }) => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`${API_URL}/dashboard/todo-lists/${listId}`, {
+      await api.delete(`/dashboard/todo-lists/${listId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTodoLists((prev) => prev.filter((list) => list._id !== listId));
@@ -186,8 +188,8 @@ const Dashboard = ({ token }) => {
     }
     
     try {
-      const { data } = await axios.put(
-        `${API_URL}/dashboard/todo-lists/${listId}`,
+      const { data } = await api.put(
+        `/dashboard/todo-lists/${listId}`,
         { title: newName },
         { headers: { Authorization: `Bearer ${token}` } }
       );

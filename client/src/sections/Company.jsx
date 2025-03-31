@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
+import { useApi } from "../api/api"; // Import useApi
 
 const Company = () => {
+  const api = useApi(); // Use the configured Axios instance
   const [companies, setCompanies] = useState([]); // Ensure companies is initialized as an empty array
   const [formData, setFormData] = useState({
     name: "",
@@ -12,8 +13,6 @@ const Company = () => {
     website: "",
   });
   const [editingCompanyId, setEditingCompanyId] = useState(null);
-  const { API_URL } = useAppContext();
-
 
   useEffect(() => {
     fetchCompanies();
@@ -21,7 +20,7 @@ const Company = () => {
 
   const fetchCompanies = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/companies`);
+      const { data } = await api.get("/companies");
       if (Array.isArray(data)) {
         setCompanies(data); // Ensure the response is an array before setting state
       } else {
@@ -49,14 +48,11 @@ const Company = () => {
     try {
       if (editingCompanyId) {
         // Update company
-        const { data } = await axios.put(
-          `${API_URL}/companies/${editingCompanyId}`,
-          formData
-        );
+        const { data } = await api.put(`/companies/${editingCompanyId}`, formData);
         toast.success(data.message);
       } else {
         // Create company
-        const { data } = await axios.post(`${API_URL}/companies`, formData);
+        const { data } = await api.post("/companies", formData);
         toast.success(data.message);
       }
 
@@ -84,7 +80,7 @@ const Company = () => {
       return;
 
     try {
-      const { data } = await axios.delete(`${API_URL}/companies/${id}`);
+      const { data } = await api.delete(`/companies/${id}`);
       toast.success(data.message);
       fetchCompanies();
     } catch (error) {
@@ -149,13 +145,18 @@ const Company = () => {
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Company List</h2>
-          <p className="text-black font-bold">Total Companies: <span className="text-white bg-black font-bold px-5 py-1 rounded-md">{companies.length}</span> </p>
+          <p className="text-black font-bold">
+            {"Total Companies: "}
+            <span className="text-white bg-black font-bold px-5 py-1 rounded-md">
+              {companies.length}
+            </span>
+          </p>
         </div>
         {Array.isArray(companies) && companies.length > 0 ? (
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border border-gray-300 px-4 py-2">#</th> {/* Serial Number Column */}
+                <th className="border border-gray-300 px-4 py-2">#</th>
                 <th className="border border-gray-300 px-4 py-2">Name</th>
                 <th className="border border-gray-300 px-4 py-2">Address</th>
                 <th className="border border-gray-300 px-4 py-2">Website</th>
@@ -165,9 +166,8 @@ const Company = () => {
             <tbody>
               {companies.map((company, index) => (
                 <React.Fragment key={company._id}>
-                  {/* Main Row */}
                   <tr className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-2 text-center">{index + 1}</td> {/* Serial Number */}
+                    <td className="border border-gray-300 px-4 py-2 text-center">{index + 1}</td>
                     <td className="border border-gray-300 px-4 py-2">{company.name}</td>
                     <td className="border border-gray-300 px-4 py-2">{company.address}</td>
                     <td className="border border-gray-300 px-4 py-2">
@@ -195,14 +195,13 @@ const Company = () => {
                       </button>
                     </td>
                   </tr>
-
-                  {/* Description Row */}
                   <tr className="bg-gray-50">
                     <td
                       colSpan="5"
                       className="border border-gray-300 px-4 py-2 text-gray-700 italic"
                     >
-                      <strong>Description:</strong> {company.description || "No description available"}
+                      <strong>Description:</strong>{" "}
+                      {company.description || "No description available"}
                     </td>
                   </tr>
                 </React.Fragment>

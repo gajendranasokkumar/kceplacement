@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import StudentRow from "../components/StudentRow"; // Import the StudentRow component
 import { useAppContext } from "../context/AppContext";
+import { useApi } from "../api/api"; // Import useApi
 
 const LeetCode = () => {
+  const api = useApi(); // Use the configured Axios instance
   const { API_URL } = useAppContext();
   const [students, setStudents] = useState([]); // Fetch students from backend
   const [stats, setStats] = useState({});
@@ -24,9 +25,9 @@ const LeetCode = () => {
     const fetchFilters = async () => {
       try {
         const [yearResponse, batchResponse, departmentResponse] = await Promise.all([
-          axios.get(`${API_URL}/upload/years`), // Backend endpoint for years
-          axios.get(`${API_URL}/upload/batches`), // Backend endpoint for batches
-          axios.get(`${API_URL}/upload/departments`), // Backend endpoint for departments
+          api.get("/upload/years"), // Backend endpoint for years
+          api.get("/upload/batches"), // Backend endpoint for batches
+          api.get("/upload/departments"), // Backend endpoint for departments
         ]);
         setYears(Array.isArray(yearResponse.data) ? yearResponse.data : []); // Ensure years is an array
         setBatches(Array.isArray(batchResponse.data) ? batchResponse.data : []); // Ensure batches is an array
@@ -40,7 +41,7 @@ const LeetCode = () => {
     };
 
     fetchFilters();
-  }, []);
+  }, [api]);
 
   const handleFilter = async () => {
     try {
@@ -50,7 +51,7 @@ const LeetCode = () => {
       if (selectedDepartment) query.push(`department=${selectedDepartment}`); // Add department to query
       const queryString = query.length > 0 ? `?${query.join("&")}` : "";
 
-      const { data } = await axios.get(`${API_URL}/students${queryString}`); // Fetch students based on filters
+      const { data } = await api.get(`/students${queryString}`); // Fetch students based on filters
       setStudents(data);
       setFilteredStudents(data);
       setIsFiltered(true); // Mark that filtering has been applied
@@ -60,6 +61,14 @@ const LeetCode = () => {
       setFilteredStudents([]);
       setIsFiltered(true); // Mark that filtering has been applied even if no data is fetched
     }
+  };
+
+  const clearFilters = () => {
+    setSelectedYear("");
+    setSelectedBatch("");
+    setSelectedDepartment("");
+    setFilteredStudents(students); // Reset to show all students
+    setIsFiltered(false); // Reset filter state
   };
 
   useEffect(() => {
@@ -90,7 +99,7 @@ const LeetCode = () => {
             `;
 
             // Make a POST request to the backend proxy
-            const { data } = await axios.post(`${API_URL}/leetcode/graphql`, {
+            const { data } = await api.post("/leetcode/graphql", {
               query,
               variables: { username },
             });
@@ -125,7 +134,7 @@ const LeetCode = () => {
 
       fetchStats();
     }
-  }, [filteredStudents, isFiltered]);
+  }, [filteredStudents, isFiltered, api]);
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
@@ -181,6 +190,14 @@ const LeetCode = () => {
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
         >
           Filter
+        </button>
+
+        {/* Clear Filters Button */}
+        <button
+          onClick={clearFilters}
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+        >
+          Clear Filters
         </button>
       </div>
 

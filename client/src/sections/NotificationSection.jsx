@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Notification from "../components/Notification";
 import { useAppContext } from "../context/AppContext";
+import { useApi } from "../api/api"; // Import useApi
 
 const NotificationSection = () => {
+  const api = useApi(); // Use the configured Axios instance
   const { API_URL } = useAppContext();
   const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -11,7 +12,7 @@ const NotificationSection = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/notifications`);
+        const { data } = await api.get("/notifications");
         setNotifications(data);
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
@@ -19,14 +20,14 @@ const NotificationSection = () => {
     };
 
     fetchNotifications();
-  }, [API_URL]);
+  }, [api]);
 
   const handleNotificationClick = async (notification) => {
     setSelectedNotification(notification);
 
     // Mark the notification as viewed
     try {
-      const { data } = await axios.put(`${API_URL}/notifications/${notification._id}`, {
+      const { data } = await api.put(`/notifications/${notification._id}`, {
         viewed: true,
       });
       setNotifications((prev) =>
@@ -39,7 +40,7 @@ const NotificationSection = () => {
 
   const handleDeleteNotification = async () => {
     try {
-      await axios.delete(`${API_URL}/notifications/${selectedNotification._id}`);
+      await api.delete(`/notifications/${selectedNotification._id}`);
       setNotifications((prev) =>
         prev.filter((n) => n._id !== selectedNotification._id)
       );
