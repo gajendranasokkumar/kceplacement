@@ -7,10 +7,11 @@ async function getStudents() {
 
 async function getStatistics() {
   const totalStudents = await StudentModel.countDocuments();
-  const totalTeachers = 10; // Replace with actual logic
-  const totalCourses = 5; // Replace with actual logic
-  const totalDepartments = 3; // Replace with actual logic
-  return { totalStudents, totalTeachers, totalCourses, totalDepartments };
+  const totalPlacedStudents = await StudentModel.countDocuments({ isPlaced: true });
+  const totalBatches = await StudentModel.distinct("batchName").then((batches) => batches.length);
+  const totalYears = await StudentModel.distinct("year").then((years) => years.length);
+
+  return { totalStudents, totalPlacedStudents, totalBatches, totalYears };
 }
 
 async function getTodoLists() {

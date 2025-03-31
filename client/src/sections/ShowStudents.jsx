@@ -228,6 +228,27 @@ const ShowStudents = () => {
     }
   };
 
+  const handleFilter = () => {
+    let filtered = students;
+
+    // Apply department filter
+    if (selectedDepartment) {
+      filtered = filtered.filter(
+        (student) => student.department === selectedDepartment
+      );
+    }
+
+    // Apply batch filter
+    if (selectedBatch) {
+      filtered = filtered.filter(
+        (student) => student.batchName === selectedBatch
+      );
+    }
+
+    setFilteredStudents(filtered); // Update the filtered students
+    setCurrentPage(1); // Reset to the first page
+  };
+
   // Pagination logic
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -301,6 +322,12 @@ const ShowStudents = () => {
             </option>
           ))}
         </select>
+        <button
+          onClick={handleFilter}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Apply Filters
+        </button>
         <button
           onClick={() => {
             setSelectedDepartment("");
@@ -381,6 +408,7 @@ const ShowStudents = () => {
                 <th className="border border-gray-300 px-4 py-2">Roll No</th>
                 <th className="border border-gray-300 px-4 py-2">Department</th>
                 <th className="border border-gray-300 px-4 py-2">Batch/Year</th>
+                <th className="border border-gray-300 px-4 py-2">Leetcode Username</th>
                 <th className="border border-gray-300 px-4 py-2">Actions</th>
               </tr>
             </thead>
@@ -444,6 +472,16 @@ const ShowStudents = () => {
                             className="p-1 border border-gray-300 rounded"
                           />
                         </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <input
+                            type="text"
+                            value={editedStudent.leetcodeUsername || ""}
+                            onChange={(e) =>
+                              handleInputChange("leetcodeUsername", e.target.value)
+                            }
+                            className="p-1 border border-gray-300 rounded"
+                          />
+                        </td>
                       </>
                     ) : (
                       <>
@@ -458,6 +496,9 @@ const ShowStudents = () => {
                         </td>
                         <td className="border border-gray-300 px-4 py-2">
                           {student.batchName || student.year}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {student.leetcodeUsername || "N/A"}
                         </td>
                       </>
                     )}
@@ -482,10 +523,9 @@ const ShowStudents = () => {
                   {student.isPlaced && student.company && (
                     <tr className="bg-green-50">
                       <td
-                        colSpan="7"
+                        colSpan="8"
                         className="border border-gray-300 px-4 py-2 text-center"
                       >
-                        {/* <strong>Company:</strong>{" "} */}
                         <button
                           className="text-blue-600 underline"
                           onClick={() => fetchCompanyDetails(student.company)}

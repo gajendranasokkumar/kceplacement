@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaTachometerAlt, FaUpload, FaEdit, FaBell, FaCode, FaBuilding } from "react-icons/fa"; // Import icons
+import { FaTachometerAlt, FaUpload, FaEdit, FaBell, FaCode, FaBuilding, FaQuestionCircle } from "react-icons/fa"; // Import icons
 
 const Navbar = ({ isOpen, setIsOpen }) => {
   return (
@@ -85,6 +85,13 @@ const Navbar = ({ isOpen, setIsOpen }) => {
         >
           <FaBell className="text-xl" />
           {isOpen && <span className="ml-4">Notifications</span>}
+        </Link>
+        <Link
+          to="/help"
+          className="flex items-center hover:bg-gray-700 p-2 rounded transition-all duration-300 ease-in-out"
+        >
+          <FaQuestionCircle className="text-xl" />
+          {isOpen && <span className="ml-4">Help</span>}
         </Link>
       </div>
     </div>

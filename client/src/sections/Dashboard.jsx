@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBuilding, FaPlus, FaCheck, FaEdit, FaTrash } from "react-icons/fa"; // Import icons
+import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBuilding, FaPlus, FaCheck, FaEdit, FaTrash, FaCheckCircle, FaLayerGroup, FaCalendarAlt } from "react-icons/fa"; // Import icons
 import Button from "../components/Button";
 import Card from "../components/Card";
 import CardContent from "../components/CardContent";
@@ -17,6 +17,9 @@ const Dashboard = ({ token }) => {
     totalTeachers: 0,
     totalCourses: 0,
     totalDepartments: 0,
+    totalPlacedStudents: 0,
+    totalBatches: 0,
+    totalYears: 0,
   });
 
   // To-Do State
@@ -208,7 +211,7 @@ const Dashboard = ({ token }) => {
       </div>
 
       {/* Statistics Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
           <FaUserGraduate className="text-5xl" />
           <div>
@@ -217,24 +220,24 @@ const Dashboard = ({ token }) => {
           </div>
         </div>
         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
-          <FaChalkboardTeacher className="text-5xl" />
+          <FaCheckCircle className="text-5xl" />
           <div>
-            <h3 className="text-lg font-semibold">Total Teachers</h3>
-            <p className="text-3xl font-bold">{statistics.totalTeachers}</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-6 rounded-lg shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
-          <FaBook className="text-5xl" />
-          <div>
-            <h3 className="text-lg font-semibold">Total Courses</h3>
-            <p className="text-3xl font-bold">{statistics.totalCourses}</p>
+            <h3 className="text-lg font-semibold">Placed Students</h3>
+            <p className="text-3xl font-bold">{statistics.totalPlacedStudents}</p>
           </div>
         </div>
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
-          <FaBuilding className="text-5xl" />
+          <FaLayerGroup className="text-5xl" />
           <div>
-            <h3 className="text-lg font-semibold">Total Departments</h3>
-            <p className="text-3xl font-bold">{statistics.totalDepartments}</p>
+            <h3 className="text-lg font-semibold">Total Batches</h3>
+            <p className="text-3xl font-bold">{statistics.totalBatches}</p>
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-6 rounded-lg shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
+          <FaCalendarAlt className="text-5xl" />
+          <div>
+            <h3 className="text-lg font-semibold">Total Years</h3>
+            <p className="text-3xl font-bold">{statistics.totalYears}</p>
           </div>
         </div>
       </div>

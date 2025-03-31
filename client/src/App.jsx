@@ -17,6 +17,7 @@ import LeetCode from "./sections/LeetCode";
 import SocketListener from "./components/SocketListener"; // Import SocketListener
 import ShowStudents from "./sections/ShowStudents"; // Import ShowStudents component
 import Company from "./sections/Company"; // Import the Company component
+import HelpSection from "./sections/HelpSection"; // Import HelpSection
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -90,6 +91,10 @@ const App = () => {
             <Route
               path="/company"
               element={<PrivateRoute token={token} element={<Company />} />} // Add the Company route
+            />
+            <Route
+              path="/help"
+              element={<PrivateRoute token={token} element={<HelpSection />} />}
             />
           </Routes>
 
