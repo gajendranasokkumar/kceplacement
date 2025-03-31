@@ -9,6 +9,7 @@ const {
   addSection,
   deleteSection,
   getYears,
+  getDepartments,
 } = require("../services/uploadService"); // Destructure the service functions
 
 const UploadController = {
@@ -105,6 +106,15 @@ const UploadController = {
       res.status(200).json(years);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch years" });
+    }
+  },
+
+  async getDepartments(req, res) {
+    try {
+      const departments = await getDepartments();
+      res.status(200).json(departments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch departments" });
     }
   },
 };

@@ -6,7 +6,7 @@ const uploadSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["batch", "class", "section", "year"], // Restrict type to specific values
+      enum: ["batch", "class", "section", "year", "department"], // Restrict type to specific values
     },
     name: {
       type: String,

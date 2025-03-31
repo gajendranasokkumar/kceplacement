@@ -7,9 +7,13 @@ const uploadController = require("../controllers/uploadController");
 const upload = multer({ dest: "uploads/" }); // Save files to "uploads" folder
 
 router.get("/batches", uploadController.getBatches);
-router.get("/years", uploadController.getYears);
 router.post("/batches", uploadController.addBatch);
 router.delete("/batches/:id", uploadController.deleteBatch);
+
+router.get("/years", uploadController.getYears);
+
+router.get("/departments", uploadController.getDepartments);
+router.post("/departments", uploadController.getDepartments);
 
 router.get("/classes", uploadController.getClasses);
 router.post("/classes", uploadController.addClass);

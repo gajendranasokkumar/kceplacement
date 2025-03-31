@@ -13,7 +13,7 @@ async function processExcelFile(filePath, userId) {
   let failureCount = 0;
   const failureDocuments = [];
 
-  // Helper function to ensure year or batch exists in UploadModel
+  // Helper function to ensure year, batch, or department exists in UploadModel
   const ensureUploadEntry = async (type, name) => {
     const existingEntry = await UploadModel.findOne({ type, name });
     if (!existingEntry) {
@@ -26,16 +26,16 @@ async function processExcelFile(filePath, userId) {
   for (const row of sheetData) {
     try {
       // Validate required fields
-      
       if (!row.name || !row.rollNo || !row.department || !row.leetcodeUsername || !row.year || !row.batchName) {
         throw new Error(
           "Missing required fields: name, rollNo, department, leetcodeUsername, year, or batch"
         );
       }
 
-      // Ensure the year and batch exist in the UploadModel
+      // Ensure the year, batch, and department exist in the UploadModel
       await ensureUploadEntry("year", row.year);
       await ensureUploadEntry("batch", row.batchName);
+      await ensureUploadEntry("department", row.department); // Ensure department exists
 
       // Check if a student with the same rollNo or leetcodeUsername already exists
       const existingStudent = await StudentModel.findOne({

@@ -6,14 +6,15 @@ const mongoose = require("mongoose");
 
 // Fetch students by batch or year
 router.get("/", async (req, res) => {
-  const { batch, year } = req.query;
+  const { batch, year, department } = req.query;
 
   try {
     const query = {};
     if (batch) query.batchName = batch;
     if (year) query.year = year;
-    if (!batch && !year) {
-      return res.status(400).json({ error: "Either batch or year must be provided" });
+    if(department) query.department = department;
+    if (!batch && !year && !department) {
+      return res.status(400).json({ error: "Either batch or year or department must be provided" });
     }
 
     const students = await StudentModel.find(query);

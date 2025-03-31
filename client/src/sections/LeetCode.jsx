@@ -13,25 +13,29 @@ const LeetCode = () => {
   // Filter states
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
-  const [selectedClassSection, setSelectedClassSection] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState(""); // State for selected department
 
   const [years, setYears] = useState([]); // State for years
   const [batches, setBatches] = useState([]); // State for batches
+  const [departments, setDepartments] = useState([]); // State for departments
 
   useEffect(() => {
-    // Fetch years and batches from the backend
+    // Fetch years, batches, and departments from the backend
     const fetchFilters = async () => {
       try {
-        const [yearResponse, batchResponse] = await Promise.all([
+        const [yearResponse, batchResponse, departmentResponse] = await Promise.all([
           axios.get(`${API_URL}/upload/years`), // Backend endpoint for years
           axios.get(`${API_URL}/upload/batches`), // Backend endpoint for batches
+          axios.get(`${API_URL}/upload/departments`), // Backend endpoint for departments
         ]);
         setYears(Array.isArray(yearResponse.data) ? yearResponse.data : []); // Ensure years is an array
         setBatches(Array.isArray(batchResponse.data) ? batchResponse.data : []); // Ensure batches is an array
+        setDepartments(Array.isArray(departmentResponse.data) ? departmentResponse.data : []); // Ensure departments is an array
       } catch (error) {
         console.error("Failed to fetch filters", error);
         setYears([]); // Fallback to an empty array
         setBatches([]); // Fallback to an empty array
+        setDepartments([]); // Fallback to an empty array
       }
     };
 
@@ -43,6 +47,7 @@ const LeetCode = () => {
       const query = [];
       if (selectedYear) query.push(`year=${selectedYear}`);
       if (selectedBatch) query.push(`batch=${selectedBatch}`);
+      if (selectedDepartment) query.push(`department=${selectedDepartment}`); // Add department to query
       const queryString = query.length > 0 ? `?${query.join("&")}` : "";
 
       const { data } = await axios.get(`${API_URL}/students${queryString}`); // Fetch students based on filters
@@ -156,15 +161,18 @@ const LeetCode = () => {
           ))}
         </select>
 
-        {/* Class Section Dropdown */}
+        {/* Department Dropdown */}
         <select
-          value={selectedClassSection}
-          onChange={(e) => setSelectedClassSection(e.target.value)}
+          value={selectedDepartment}
+          onChange={(e) => setSelectedDepartment(e.target.value)}
           className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">Select Class Section</option>
-          <option value="CS1">CS1</option>
-          <option value="CS2">CS2</option>
+          <option value="">Select Department</option>
+          {departments.map((department) => (
+            <option key={department._id} value={department.name}>
+              {department.name}
+            </option>
+          ))}
         </select>
 
         {/* Filter Button */}
@@ -192,6 +200,7 @@ const LeetCode = () => {
                 <th className="px-4 py-2 text-center">Medium</th>
                 <th className="px-4 py-2 text-center">Hard</th>
                 <th className="px-4 py-2 text-center">Total</th>
+                <th className="px-4 py-2 text-center">Profile</th>
               </tr>
             </thead>
             <tbody>
@@ -201,6 +210,7 @@ const LeetCode = () => {
                   index={index}
                   student={student}
                   stats={stats[student._id] || {}}
+                  leetcodeProfile={student.leetcodeUsername} // Pass the LeetCode profile link
                 />
               ))}
             </tbody>

@@ -54,6 +54,10 @@ async function getYears() {
   return await UploadModel.find({ type: "year" });
 }
 
+async function getDepartments() {
+  return await UploadModel.find({ type: "department" });
+} 
+
 module.exports = {
   getBatches,
   addBatch,
@@ -66,4 +70,5 @@ module.exports = {
   deleteSection,
   getBatches,
   getYears,
+  getDepartments,
 };

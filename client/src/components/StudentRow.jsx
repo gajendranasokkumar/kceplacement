@@ -1,6 +1,7 @@
 import React from "react";
+import { FaCode } from "react-icons/fa"; // Import LeetCode symbol (or any icon library)
 
-const StudentRow = ({ index, student, stats }) => {
+const StudentRow = ({ index, student, stats, leetcodeProfile }) => {
   const isLoading = !stats || Object.keys(stats).length === 0;
 
   return (
@@ -51,6 +52,16 @@ const StudentRow = ({ index, student, stats }) => {
         ) : (
           stats.totalSolved || 0
         )}
+      </td>
+      <td className="px-4 py-2 text-center">
+        <a
+          href={leetcodeProfile}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700"
+        >
+          <FaCode size={20} /> {/* LeetCode symbol */}
+        </a>
       </td>
     </tr>
   );
