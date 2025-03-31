@@ -18,12 +18,14 @@ import SocketListener from "./components/SocketListener"; // Import SocketListen
 import ShowStudents from "./sections/ShowStudents"; // Import ShowStudents component
 import Company from "./sections/Company"; // Import the Company component
 import HelpSection from "./sections/HelpSection"; // Import HelpSection
+import CustomToast from "./components/CustomToast"; // Import CustomToast
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isNavbarOpen, setIsNavbarOpen] = useState(
     JSON.parse(localStorage.getItem("navbarState")) || false
   );
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     if (token) localStorage.setItem("token", token);
@@ -38,6 +40,14 @@ const App = () => {
       localStorage.removeItem("token");
     }
   }, [token]);
+
+  const handleNotification = (data) => {
+    setNotification(data);
+  };
+
+  const closeNotification = () => {
+    setNotification(null);
+  };
 
   return (
     <Router>
@@ -136,11 +146,15 @@ const App = () => {
           </Routes>
 
           {/* Socket Listener */}
-          <SocketListener
-            onNotification={(data) => {
-              toast.success("Excel processing completed!"); // Show a toast notification
-            }}
-          />
+          <SocketListener onNotification={handleNotification} />
+
+          {/* Custom Notification */}
+          {notification && (
+            <CustomToast 
+              message={notification} 
+              onClose={closeNotification}
+            />
+          )}
         </div>
       </div>
     </Router>

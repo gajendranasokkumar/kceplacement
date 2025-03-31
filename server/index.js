@@ -14,8 +14,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const server = require("http").createServer(app);
-initSocket(server); // Initialize socket server
+const http = require("http");
+const server = http.createServer(app);
+
+// Initialize socket.io
+initSocket(server);
 
 const dbURI = process.env.NODE_ENV === "production"
   ? process.env.MONGODB_URI_PRODUCTION

@@ -102,21 +102,31 @@ const NotificationSection = () => {
                       <tbody>
                         {selectedNotification.failureDocuments.map((doc, index) => (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="border border-gray-300 px-4 py-1">{doc.row.name}</td>
-                            <td className="border border-gray-300 px-4 py-2">{doc.row.rollNo}</td>
-                            <td className="border border-gray-300 px-4 py-2">{doc.row.department}</td>
+                            <td className="border border-gray-300 px-4 py-1">
+                              {doc.row?.name || "N/A"}
+                            </td>
                             <td className="border border-gray-300 px-4 py-2">
-                              <a
-                                href={doc.row.leetcodeUsername}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline"
-                              >
-                                {doc.row.leetcodeUsername}
-                              </a>
+                              {doc.row?.rollNo || "N/A"}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              {doc.row?.department || "N/A"}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              {doc.row?.leetcodeUsername ? (
+                                <a
+                                  href={doc.row.leetcodeUsername}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:underline"
+                                >
+                                  {doc.row.leetcodeUsername}
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
                             </td>
                             <td className="border border-gray-300 px-4 py-2 text-red-600">
-                              {doc.error}
+                              {doc.error || "Unknown error"}
                             </td>
                           </tr>
                         ))}

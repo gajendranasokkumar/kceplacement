@@ -1,30 +1,44 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { io } from "socket.io-client";
+import { useAppContext } from "../context/AppContext";
 
 const SocketListener = ({ onNotification }) => {
+  const { API_URL } = useAppContext();
+
   useEffect(() => {
-    // Replace with your actual backend socket server URL
-    const socket = io("http://localhost:3000", {
-      transports: ["websocket"], // Ensure WebSocket is used
-    });
+    const userId = localStorage.getItem("userId");
+    if (!userId) return; // Don't connect if no userId
 
-    // Listen for the `excelProcessingComplete` event
-    socket.on("excelProcessingComplete", (data) => {
-      console.log("Received notification:", data);
-
-      // Pass the notification data to the parent component
-      if (onNotification) {
-        onNotification(data);
+    const socket = io(API_URL, {
+      transports: ["websocket"],
+      withCredentials: true,
+      auth: {
+        userId // Add userId to socket auth
       }
     });
 
-    // Cleanup the socket connection on component unmount
+    socket.on("connect", () => {
+      socket.emit("join", userId);
+    });
+
+    socket.on("excelProcessingComplete", (data) => {
+      console.log("Received notification:", data);
+      if (onNotification) {
+        onNotification({
+          title: data.errorCount > 0 
+            ? "Excel Processing Completed with Errors"
+            : "Excel Processing Completed Successfully",
+          ...data
+        });
+      }
+    });
+
     return () => {
       socket.disconnect();
     };
-  }, [onNotification]);
+  }, [API_URL, onNotification]);
 
-  return null; // This component doesn't render anything
+  return null;
 };
 
 export default SocketListener;

@@ -20,6 +20,7 @@ const Login = ({ setToken }) => {
         password,
       });
       localStorage.setItem("token", data.token); // Store token in localStorage
+      localStorage.setItem("userId", data.userId); // Add this line
       setToken(data.token); // Update token in the app context
       toast.success("Login Successful");
     } catch (error) {

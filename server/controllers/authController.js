@@ -14,7 +14,10 @@ exports.loginAdmin = (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    return res.status(200).json({ token });
+    return res.status(200).json({ 
+      token,
+      userId: email // Add this line to send userId
+    });
   }
 
   res.status(401).json({ error: "Invalid credentials" });
