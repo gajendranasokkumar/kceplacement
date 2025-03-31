@@ -1,0 +1,21 @@
+{
+    "short_name": "KCEPLACEMENT",
+    "name": "KCE PLACEMENT",
+    "icons": [
+      {
+        "src": "klogo.png",
+        "type": "image/jpg",
+        "sizes": "192x192"
+      },
+      {
+        "src": "klogo.png",
+        "type": "image/jpg",
+        "sizes": "512x512"
+      }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff"
+  }
+  
