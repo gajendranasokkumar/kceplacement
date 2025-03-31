@@ -28,6 +28,14 @@ mongoose.connect(dbURI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// Serve static files from the "views" directory
+app.use(express.static(path.join(__dirname, "views")));
+
+// Route to serve the index.html file for GET /
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+
 // Protected routes
 app.use("/upload", verifyAdmin, routes.uploadRoutes);
 app.use("/dashboard", verifyAdmin, routes.dashboardRoutes);
