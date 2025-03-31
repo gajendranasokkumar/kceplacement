@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const ADMIN_CREDENTIALS = {
-  email: "admin@example.com",
+  email: "admin@kceplacement.com",
   password: "Admin@kceplacement", // Replace with a strong password
 };
 
