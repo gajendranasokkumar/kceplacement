@@ -4,24 +4,21 @@ const { processStudentData } = require("../services/studentService");
 const NotificationModel = require("../models/NotificationModel");
 const { getSocket } = require("../socket");
 
-// Configure Redis connection
-const redisConnection = new Redis({
-  port: 6379, // Default Redis port
-  host: "oregon-redis.render.com", // Redis host (without protocol)
-  username: "red-cu5k720gph6c73btg550", // Render Redis uses "default" as the username
-  password: "gFaP987WJqMyu3CJCVdL4lqEYsigRzba", // Replace with your actual Redis password
-  tls: {}, // Enables SSL/TLS for secure connection
-  maxRetriesPerRequest: null, // Prevents retries for failed requests
-  connectTimeout: 10000,
-  reconnectOnError: (err) => {
-    console.error("Redis connection error:", err.message);
-    return true; // Reconnect on any Redis error
-  },
-});
-
 // Initialize the Bull queue with the Redis connection
 const excelQueue = new Queue("studentQueue", {
-  redis: redisConnection, // Use the Redis connection options
+  redis: {
+    port: 6379, // Default Redis port
+    host: "oregon-redis.render.com", // Redis host (without protocol)
+    username: "red-cu5k720gph6c73btg550", // Render Redis uses "default" as the username
+    password: "gFaP987WJqMyu3CJCVdL4lqEYsigRzba", // Replace with your actual Redis password
+    tls: {}, // Enables SSL/TLS for secure connection
+    maxRetriesPerRequest: null, // Prevents retries for failed requests
+    connectTimeout: 10000,
+    reconnectOnError: (err) => {
+      console.error("Redis connection error:", err.message);
+      return true; // Reconnect on any Redis error
+    },
+  }, // Use the Redis connection options
 });
 
 const requestJobTracker = new Map(); // Track jobs by requestId
