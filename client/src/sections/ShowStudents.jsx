@@ -270,6 +270,31 @@ const ShowStudents = () => {
     setCompanyDetails(null);
   };
 
+  const handleDeleteStudents = async () => {
+    if (selectedStudents.length === 0) {
+      toast.error("Please select at least one student to delete");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete the selected students?")) {
+      return;
+    }
+
+    try {
+      const { data } = await api.delete("/students/selected", {
+        data: { studentIds: selectedStudents }, // Pass the selected student IDs in the request body
+      });
+
+      toast.success(data.message);
+      fetchStudents(); // Refresh the student list
+      setSelectedStudents([]); // Clear selected students
+      setSelectAll(false); // Reset the "Select All" checkbox
+    } catch (error) {
+      console.error("Failed to delete students:", error);
+      toast.error("Failed to delete students");
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">
@@ -334,7 +359,19 @@ const ShowStudents = () => {
         >
           Clear Filters
         </button>
+
+        {/* Delete Students Section */}
+        {/* <div className="flex items-center gap-4 w-full"> */}
+          <button
+            onClick={handleDeleteStudents}
+            className="px-2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-1/4"
+          >
+            Delete Selected Students
+          </button>
+        {/* </div> */}
       </div>
+
+      
 
       {/* Batch and Placement Update Section */}
       <div className="flex flex-col gap-6 mb-6 w-full">
@@ -382,6 +419,7 @@ const ShowStudents = () => {
             Remove Company
           </button>
         </div>
+
       </div>
 
       {/* Student Table */}

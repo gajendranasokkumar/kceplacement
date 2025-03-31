@@ -146,6 +146,27 @@ router.delete("/", authenticate, async (req, res) => {
   }
 });
 
+router.delete("/selected", authenticate, async (req, res) => {
+  const { studentIds } = req.body;
+
+  if (!studentIds || studentIds.length === 0) {
+    return res.status(400).json({ error: "Student IDs are required" });
+  }
+
+  try {
+    // Delete students from the database
+    const result = await StudentModel.deleteMany({ _id: { $in: studentIds } });
+
+    res.status(200).json({
+      message: "Selected students deleted successfully",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Error deleting students:", error);
+    res.status(500).json({ error: "Failed to delete students" });
+  }
+});
+
 // Fetch unique departments and batches
 router.get("/filters", authenticate, async (req, res) => {
   try {
