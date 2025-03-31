@@ -12,13 +12,13 @@ const HelpSection = () => {
         </p>
         <ul className="mt-4 space-y-2">
           <li>
-            <strong>Name:</strong> John Doe
+            <strong>Name:</strong> Gajendran A
           </li>
           <li>
-            <strong>Email:</strong> john.doe@example.com
+            <strong>Email:</strong> gajendran2908@gamil.com
           </li>
           <li>
-            <strong>Phone:</strong> +1 234 567 890
+            <strong>Phone:</strong> +91 9944919805
           </li>
         </ul>
       </div>

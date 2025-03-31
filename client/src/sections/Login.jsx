@@ -5,17 +5,17 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import CardContent from "../components/CardContent";
 import Input from "../components/Input";
-import { useAppContext } from "../context/AppContext";
+import { useApi } from "../api/api"; // Import the API utility
 
 const Login = ({ setToken }) => {
-  const { API_URL } = useAppContext();
+  const api = useApi();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(`${API_URL}/auth/login`, {
+      const { data } = await api.post("/auth/login", {
         email,
         password,
       });
