@@ -12,6 +12,11 @@ const redisConnection = new Redis({
   password: "gFaP987WJqMyu3CJCVdL4lqEYsigRzba", // Replace with your actual Redis password
   tls: {}, // Enables SSL/TLS for secure connection
   maxRetriesPerRequest: null, // Prevents retries for failed requests
+  connectTimeout: 10000,
+  reconnectOnError: (err) => {
+    console.error("Redis connection error:", err.message);
+    return true; // Reconnect on any Redis error
+  },
 });
 
 // Initialize the Bull queue with the Redis connection
