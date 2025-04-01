@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx"; // Import XLSX for Excel generation
 import StudentRow from "../components/StudentRow"; // Import the StudentRow component
 import { useAppContext } from "../context/AppContext";
 import { useApi } from "../api/api"; // Import useApi
@@ -10,6 +11,7 @@ const LeetCode = () => {
   const [stats, setStats] = useState({});
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [isFiltered, setIsFiltered] = useState(false); // Track if filtering has been applied
+  const [isFetchingCompleted, setIsFetchingCompleted] = useState(false); // Track if fetching is completed
 
   // Filter states
   const [selectedYear, setSelectedYear] = useState("");
@@ -130,15 +132,51 @@ const LeetCode = () => {
           }
         }
         setStats(newStats);
+        setIsFetchingCompleted(true); // Mark fetching as completed
       };
 
       fetchStats();
     }
   }, [filteredStudents, isFiltered, api]);
 
+  const downloadExcel = () => {
+    const dataToExport = filteredStudents.map((student) => ({
+      RollNo: student.rollNo,
+      Name: student.name,
+      Year: student.year,
+      Batch: student.batchName,
+      Department: student.department,
+      Easy: stats[student._id]?.easySolved || 0,
+      Medium: stats[student._id]?.mediumSolved || 0,
+      Hard: stats[student._id]?.hardSolved || 0,
+      Total: stats[student._id]?.totalSolved || 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "LeetCode Stats");
+
+    XLSX.writeFile(workbook, "LeetCode_Stats.xlsx");
+  };
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-700 mb-6">LeetCode Statistics</h1>
+
+      {/* Download Button */}
+      <div className="mb-4">
+        <button
+          onClick={downloadExcel}
+          disabled={!isFetchingCompleted} // Disable button until fetching is completed
+          className={`px-4 py-2 rounded-lg ${
+            isFetchingCompleted
+              ? "bg-green-500 text-white hover:bg-green-600"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          Download Excel
+        </button>
+      </div>
 
       {/* Filter Section */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
