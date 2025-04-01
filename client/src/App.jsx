@@ -23,7 +23,7 @@ import CustomToast from "./components/CustomToast"; // Import CustomToast
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isNavbarOpen, setIsNavbarOpen] = useState(
-    JSON.parse(localStorage.getItem("navbarState")) || false
+    JSON.parse(localStorage.getItem("navbarState")) || true
   );
   const [notification, setNotification] = useState(null);
 
