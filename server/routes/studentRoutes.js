@@ -183,12 +183,12 @@ router.get("/filters", authenticate, async (req, res) => {
 // Update a student's details
 router.put("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
-  const { name, rollNo, department, batchName, year } = req.body;
+  const { name, rollNo, department, batchName, year, leetcodeUsername } = req.body;
 
   try {
     const updatedStudent = await StudentModel.findByIdAndUpdate(
       id,
-      { name, rollNo, department, batchName, year },
+      { name, rollNo, department, batchName, year, leetcodeUsername },
       { new: true }
     );
 
