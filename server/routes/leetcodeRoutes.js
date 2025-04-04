@@ -5,7 +5,6 @@ const router = express.Router();
 // Proxy route to fetch LeetCode statistics
 router.post("/graphql", async (req, res) => {
   const { query, variables } = req.body;
-
   try {
     const response = await axios.post("https://leetcode.com/graphql", { query, variables }, {
       headers: {

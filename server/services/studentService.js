@@ -2,9 +2,12 @@ const StudentModel = require("../models/StudentModel");
 const UploadModel = require("../models/UploadModel");
 
 async function processStudentData(studentData) {
-  const { name, rollNo, department, leetcodeUsername, year, batchName } = studentData;
+  const { name, rollNo, department, leetcodeUsername, gfgUsername, codechefUsername, year, batchName } = studentData;
 
-  // Ensure the year, batch, and department exist in UploadModel
+  if (!gfgUsername || !codechefUsername) {
+    throw new Error("gfgUsername and codechefUsername are required");
+  }
+
   const ensureUploadEntry = async (type, name) => {
     const existingEntry = await UploadModel.findOne({ type, name });
     if (!existingEntry) {
@@ -25,7 +28,7 @@ async function processStudentData(studentData) {
     // Update the existing student
     await StudentModel.updateOne(
       { rollNo },
-      { name, department, year, batchName }
+      { name, department, year, batchName, gfgUsername, codechefUsername }
     );
   } else {
     // Create a new student
@@ -34,6 +37,8 @@ async function processStudentData(studentData) {
       rollNo,
       department,
       leetcodeUsername,
+      gfgUsername,
+      codechefUsername,
       year,
       batchName,
     });

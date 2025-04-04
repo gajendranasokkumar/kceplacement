@@ -1,6 +1,9 @@
 const cors = require("cors");
 
-const allowedOrigins = ["http://localhost:5173/", "https://kceplacement.vercel.app/"];
+const allowedOrigins = [
+  "http://localhost:5173", // Local development
+  "https://kceplacement.vercel.app", // Production frontend
+];
 
 const corsOptions = {
   origin: (origin, callback) => {

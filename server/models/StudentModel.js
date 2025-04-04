@@ -6,6 +6,8 @@ const studentSchema = new Schema({
   rollNo: { type: String, required: true, unique: true },
   department: { type: String, required: true },
   leetcodeUsername: { type: String, required: true,  unique: true },
+  gfgUsername: { type: String, required: true,  unique: true },
+  codechefUsername: { type: String, required: true,  unique: true },
   batchName: { type: String, default: null },
   year: { type: String, required: true },
   isPlaced: { type: Boolean, default: false },

@@ -52,7 +52,7 @@ const Login = ({ setToken }) => {
             />
             <Button
               type="submit"
-              className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600"
+              className="w-full bg-gradient-to-br from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:bg-blue-600 hover:pointer cursor-pointer transition duration-200 ease-in-out"
             >
               Login
             </Button>

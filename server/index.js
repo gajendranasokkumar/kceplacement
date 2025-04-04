@@ -7,6 +7,8 @@ const { initSocket } = require("./socket");
 const excelQueue = require("./queues/excelQueue");
 const leetcodeRoutes = require("./routes/leetcodeRoutes");
 const authRoutes = require("./routes/authRoutes");
+const gfgRoutes = require("./routes/gfgRoutes");
+const codechefRoutes = require("./routes/codechefRoutes");
 const { verifyAdmin } = require("./middlewares/authMiddleware");
 require("dotenv").config();
 
@@ -46,6 +48,8 @@ app.use("/companies", verifyAdmin, routes.companyRoutes);
 // Public routes
 app.use("/auth", authRoutes);
 app.use("/leetcode", leetcodeRoutes);
+app.use("/gfg", gfgRoutes);
+app.use("/codechef", codechefRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);

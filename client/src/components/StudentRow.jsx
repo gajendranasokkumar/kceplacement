@@ -53,15 +53,67 @@ const StudentRow = ({ index, student, stats, leetcodeProfile }) => {
           stats.totalSolved || 0
         )}
       </td>
-      <td className="px-4 py-2 text-center">
+      <td className="px-4 py-2 text-center ">
+        <a
+          href={leetcodeProfile}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 text-center"
+        >
+          <FaCode size={20} /> 
+        </a>
+      </td>
+      {/* <td className="px-4 py-2 text-center">
         <a
           href={leetcodeProfile}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-500 hover:text-blue-700"
         >
-          <FaCode size={20} /> {/* LeetCode symbol */}
+          View Profile
         </a>
+      </td> */}
+      <td className="px-4 py-2 text-center font-bold">
+        {isLoading ? (
+          <span className="animate-spin text-gray-600">⏳</span>
+        ) : (
+          stats.gfgProblemsSolved || 0
+        )}
+      </td>
+      <td className="px-4 py-2 text-center">
+        {student.gfgUsername ? (
+          <a
+            href={student.gfgUsername}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+          <FaCode size={20} /> 
+          </a>
+        ) : (
+          "N/A"
+        )}
+      </td>
+      <td className="px-4 py-2 text-center font-bold">
+        {isLoading ? (
+          <span className="animate-spin text-gray-600">⏳</span>
+        ) : (
+          stats.codechefProblemsSolved || 0
+        )}
+      </td>
+      <td className="px-4 py-2 text-center">
+        {student.codechefUsername ? (
+          <a
+            href={student.codechefUsername}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+          <FaCode size={20} /> 
+          </a>
+        ) : (
+          "N/A"
+        )}
       </td>
     </tr>
   );

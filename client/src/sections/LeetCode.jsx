@@ -80,10 +80,18 @@ const LeetCode = () => {
         for (const student of filteredStudents) {
           try {
             // Extract the username from the leetcodeUsername link
-            const urlParts = student.leetcodeUsername.replace(/\/$/, "").split("/");
-            const username = urlParts[urlParts.length - 1]; // Get the last part of the URL
+            const leetcodeUrlParts = student.leetcodeUsername.replace(/\/$/, "").split("/");
+            const leetcodeUsername = leetcodeUrlParts[leetcodeUrlParts.length - 1];
 
-            console.log(`Fetching stats for ${username}`);
+            // Extract the username from the gfgUsername link
+            const gfgUrlParts = student.gfgUsername.replace(/\/$/, "").split("/");
+            const gfgUsername = gfgUrlParts[gfgUrlParts.length - 1];
+
+            // Extract the username from the codechefUsername link
+            const codechefUrlParts = student.codechefUsername.replace(/\/$/, "").split("/");
+            const codechefUsername = codechefUrlParts[codechefUrlParts.length - 1];
+
+            console.log(`Fetching stats for LeetCode: ${leetcodeUsername}, GFG: ${gfgUsername}, CodeChef: ${codechefUsername}`);
 
             // GraphQL query to fetch LeetCode statistics
             const query = `
@@ -100,14 +108,13 @@ const LeetCode = () => {
               }
             `;
 
-            // Make a POST request to the backend proxy
-            const { data } = await api.post("/leetcode/graphql", {
+            // Fetch LeetCode stats
+            const { data: leetcodeData } = await api.post("/leetcode/graphql", {
               query,
-              variables: { username },
+              variables: { username: leetcodeUsername },
             });
 
-            // Parse the response to extract statistics
-            const stats = data.data.matchedUser.submitStatsGlobal.acSubmissionNum.reduce(
+            const leetcodeStats = leetcodeData.data.matchedUser.submitStatsGlobal.acSubmissionNum.reduce(
               (acc, item) => {
                 if (item.difficulty === "Easy") acc.easySolved = item.count;
                 if (item.difficulty === "Medium") acc.mediumSolved = item.count;
@@ -117,10 +124,28 @@ const LeetCode = () => {
               { easySolved: 0, mediumSolved: 0, hardSolved: 0 }
             );
 
-            stats.totalSolved =
-              stats.easySolved + stats.mediumSolved + stats.hardSolved;
+            leetcodeStats.totalSolved =
+              leetcodeStats.easySolved + leetcodeStats.mediumSolved + leetcodeStats.hardSolved;
 
-            newStats[student._id] = stats;
+            // Fetch GFG stats
+            const { data: gfgData } = await api.get(`/gfg/stats/${gfgUsername}`);
+            const gfgStats = {
+              gfgProblemsSolved: gfgData.problemsSolved || 0,
+            };
+            console.log(`GFG Username: ${gfgUsername}, Problems Solved: ${gfgStats.gfgProblemsSolved}`);
+            
+
+            // Fetch CodeChef stats
+            const { data: codechefData } = await api.get(`/codechef/stats/${codechefUsername}`);
+            const codechefStats = {
+              codechefProblemsSolved: codechefData.problemsSolved || 0,
+            };
+
+            newStats[student._id] = {
+              ...leetcodeStats,
+              ...gfgStats,
+              ...codechefStats,
+            };
           } catch (error) {
             console.error(`Failed to fetch stats for ${student.leetcodeUsername}`, error);
             newStats[student._id] = {
@@ -128,6 +153,8 @@ const LeetCode = () => {
               easySolved: 0,
               mediumSolved: 0,
               hardSolved: 0,
+              gfgProblemsSolved: 0,
+              codechefProblemsSolved: 0,
             };
           }
         }
@@ -140,8 +167,9 @@ const LeetCode = () => {
   }, [filteredStudents, isFiltered, api]);
 
   const downloadExcel = () => {
-    const dataToExport = filteredStudents.map((student) => ({
-      RollNo: student.rollNo,
+    const dataToExport = filteredStudents.map((student, index) => ({
+      "S.No": index + 1,
+      "Roll No": student.rollNo,
       Name: student.name,
       Year: student.year,
       Batch: student.batchName,
@@ -149,7 +177,9 @@ const LeetCode = () => {
       Easy: stats[student._id]?.easySolved || 0,
       Medium: stats[student._id]?.mediumSolved || 0,
       Hard: stats[student._id]?.hardSolved || 0,
-      Total: stats[student._id]?.totalSolved || 0,
+      LeetcodeTotal: stats[student._id]?.totalSolved || 0,
+      GFGTotal: stats[student._id]?.gfgProblemsSolved || 0,
+      CodeChefTotal: stats[student._id]?.codechefRating || 0,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -254,7 +284,11 @@ const LeetCode = () => {
                 <th className="px-4 py-2 text-center">Easy</th>
                 <th className="px-4 py-2 text-center">Medium</th>
                 <th className="px-4 py-2 text-center">Hard</th>
-                <th className="px-4 py-2 text-center">Total</th>
+                <th className="px-4 py-2 text-center">Leetcode</th>
+                <th className="px-4 py-2 text-center">Profile</th>
+                <th className="px-4 py-2 text-center">GFG</th>
+                <th className="px-4 py-2 text-center">Profile</th>
+                <th className="px-4 py-2 text-center">CodeChef</th>
                 <th className="px-4 py-2 text-center">Profile</th>
               </tr>
             </thead>
@@ -265,7 +299,9 @@ const LeetCode = () => {
                   index={index}
                   student={student}
                   stats={stats[student._id] || {}}
-                  leetcodeProfile={student.leetcodeUsername} // Pass the LeetCode profile link
+                  leetcodeProfile={student.leetcodeUsername}
+                  gfgProfile={student.gfgUsername} // Pass GFG username
+                  codechefProfile={student.codechefUsername} // Pass CodeChef username
                 />
               ))}
             </tbody>
