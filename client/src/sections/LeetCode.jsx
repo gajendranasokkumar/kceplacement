@@ -179,7 +179,7 @@ const LeetCode = () => {
       Hard: stats[student._id]?.hardSolved || 0,
       LeetcodeTotal: stats[student._id]?.totalSolved || 0,
       GFGTotal: stats[student._id]?.gfgProblemsSolved || 0,
-      CodeChefTotal: stats[student._id]?.codechefRating || 0,
+      CodeChefTotal: stats[student._id]?.codechefProblemsSolved || 0,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
