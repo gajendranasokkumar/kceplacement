@@ -12,7 +12,7 @@ exports.loginAdmin = (req, res) => {
     const token = jwt.sign(
       { role: "admin", email }, // Include email and role in the token payload
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
     return res.status(200).json({ 
       token,
