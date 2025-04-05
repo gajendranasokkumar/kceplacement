@@ -2,7 +2,13 @@ const StudentModel = require("../models/StudentModel");
 const UploadModel = require("../models/UploadModel");
 
 async function processStudentData(studentData) {
-  const { name, rollNo, department, leetcodeUsername, gfgUsername, codechefUsername, year, batchName } = studentData;
+  let { name, rollNo, department, leetcodeUsername, gfgUsername, codechefUsername, year, batchName } = studentData;
+
+  // Convert specified fields to uppercase
+  name = name.toUpperCase();
+  rollNo = rollNo.toUpperCase();
+  department = department.toUpperCase();
+  batchName = batchName.toUpperCase();
 
   if (!gfgUsername || !codechefUsername) {
     throw new Error("gfgUsername and codechefUsername are required");
