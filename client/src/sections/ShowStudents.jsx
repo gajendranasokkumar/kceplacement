@@ -345,7 +345,7 @@ const ShowStudents = () => {
         </select>
         <button
           onClick={handleFilter}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          className="px-2 py-2 rounded-lg transition-all bg-violet-200 text-violet-600 font-bold border-2 border-violet-600 hover:bg-violet-600 hover:text-white"
         >
           Apply Filters
         </button>
@@ -355,7 +355,7 @@ const ShowStudents = () => {
             setSelectedBatch("");
             setFilteredStudents(students); // Reset to show all students
           }}
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+          className="px-2 py-2 rounded-lg transition-all bg-gray-200 text-gray-600 font-bold border-2 border-gray-600 hover:bg-gray-600 hover:text-white"
         >
           Clear Filters
         </button>
@@ -364,7 +364,7 @@ const ShowStudents = () => {
         {/* <div className="flex items-center gap-4 w-full"> */}
           <button
             onClick={handleDeleteStudents}
-            className="px-2 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-1/4"
+            className="px-2 py-2 rounded-lg transition-all bg-red-200 text-red-600 font-bold border-2 border-red-600 hover:bg-red-600 hover:text-white"
           >
             Delete Selected Students
           </button>
@@ -377,16 +377,21 @@ const ShowStudents = () => {
       <div className="flex flex-col gap-6 mb-6 w-full">
         {/* Batch Update Section */}
         <div className="flex items-center gap-4 w-full">
-          <input
-            type="text"
-            placeholder="Enter new batch name"
+          <select
             value={batchName}
             onChange={(e) => setBatchName(e.target.value)}
             className="p-2 border border-gray-300 rounded-lg flex-1"
-          />
+          >
+            <option value="">Select Batch</option>
+            {batches.map((batch) => (
+              <option key={batch} value={batch}>
+                {batch}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleBatchUpdate}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 w-1/4"
+            className="px-4 py-2 rounded-lg transition-all bg-blue-200 text-blue-600 font-bold border-2 border-blue-600 hover:bg-blue-600 hover:text-white w-1/4"
           >
             Update Batch
           </button>
@@ -397,7 +402,7 @@ const ShowStudents = () => {
           <select
             value={selectedCompany}
             onChange={(e) => setSelectedCompany(e.target.value)}
-            className="p-2 border border-gray-300 rounded-lg flex-1"
+            className="p-2 border border-gray-300 rounded-lg flex-1 w-3/4"
           >
             <option value="">Select Company</option>
             {companies.map((company) => (
@@ -408,13 +413,13 @@ const ShowStudents = () => {
           </select>
           <button
             onClick={handlePlacementUpdate}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-1/4"
+            className="px-4 py-2 rounded-lg transition-all bg-green-200 text-green-600 font-bold border-2 border-green-600 hover:bg-green-600 hover:text-white"
           >
             Update Company
           </button>
           <button
             onClick={handleRemoveCompany}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-1/4"
+            className="px-4 py-2 rounded-lg transition-all bg-red-200 text-red-600 font-bold border-2 border-red-600 hover:bg-red-600 hover:text-white"
           >
             Remove Company
           </button>
@@ -442,7 +447,6 @@ const ShowStudents = () => {
                 <th className="border border-gray-300 px-4 py-2">Roll No</th>
                 <th className="border border-gray-300 px-4 py-2">Department</th>
                 <th className="border border-gray-300 px-4 py-2">Batch/Year</th>
-                <th className="border border-gray-300 px-4 py-2">Leetcode Username</th>
                 <th className="border border-gray-300 px-4 py-2">Actions</th>
               </tr>
             </thead>
@@ -506,16 +510,6 @@ const ShowStudents = () => {
                             className="p-1 border border-gray-300 rounded"
                           />
                         </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          <input
-                            type="text"
-                            value={editedStudent.leetcodeUsername || ""}
-                            onChange={(e) =>
-                              handleInputChange("leetcodeUsername", e.target.value)
-                            }
-                            className="p-1 border border-gray-300 rounded"
-                          />
-                        </td>
                       </>
                     ) : (
                       <>
@@ -530,9 +524,6 @@ const ShowStudents = () => {
                         </td>
                         <td className="border border-gray-300 px-4 py-2">
                           {student.batchName || student.year}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {student.leetcodeUsername || "N/A"}
                         </td>
                       </>
                     )}
@@ -554,8 +545,74 @@ const ShowStudents = () => {
                       )}
                     </td>
                   </tr>
+                  <tr className={!student.isPlaced ? "border-b-2 border-b-gray-600" : ""}>
+                    <td colSpan="8" className={`border border-gray-300 px-4 py-2 ${
+                      student.isPlaced ? "bg-green-100 hover:bg-green-200" : ""
+                    }`}>
+                      <div className="flex gap-4">
+                        {editingStudentId === student._id ? (
+                          <>
+                            <input
+                              type="text"
+                              value={editedStudent.leetcodeUsername || ""}
+                              onChange={(e) =>
+                                handleInputChange("leetcodeUsername", e.target.value)
+                              }
+                              placeholder="LeetCode Username"
+                              className="p-1 w-full border border-gray-300 rounded"
+                            />
+                            <input
+                              type="text"
+                              value={editedStudent.gfgUsername || ""}
+                              onChange={(e) =>
+                                handleInputChange("gfgUsername", e.target.value)
+                              }
+                              placeholder="GeeksforGeeks Username"
+                              className="p-1 border w-full border-gray-300 rounded"
+                            />
+                            <input
+                              type="text"
+                              value={editedStudent.codechefUsername || ""}
+                              onChange={(e) =>
+                                handleInputChange("codechefUsername", e.target.value)
+                              }
+                              placeholder="CodeChef Username"
+                              className="p-1 border w-full border-gray-300 rounded"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <a
+                              href={`${student.leetcodeUsername}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 underline"
+                            >
+                              LeetCode
+                            </a>
+                            <a
+                              href={`${student.gfgUsername}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-500 underline"
+                            >
+                              GeeksforGeeks
+                            </a>
+                            <a
+                              href={`${student.codechefUsername}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-red-500 underline"
+                            >
+                              CodeChef
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
                   {student.isPlaced && student.company && (
-                    <tr className="bg-green-50">
+                    <tr className={student.isPlaced ? "border-b-2 border-b-gray-600 bg-green-50" : ""}>
                       <td
                         colSpan="8"
                         className="border border-gray-300 px-4 py-2 text-center"

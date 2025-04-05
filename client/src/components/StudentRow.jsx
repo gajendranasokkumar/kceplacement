@@ -11,11 +11,11 @@ const StudentRow = ({ index, student, stats, leetcodeProfile }) => {
       } hover:bg-gray-200 border-b-gray-500 border-b-2`}
     >
       <td className="px-4 py-2">{index + 1}</td>
-      <td className="px-4 py-2">{student.rollNo}</td>
-      <td className="px-4 py-2">{student.name}</td>
+      <td className="px-4 py-2 whitespace-nowrap">{student.rollNo}</td>
+      <td className="px-4 py-2 whitespace-nowrap">{student.name}</td>
       <td className="px-4 py-2 text-center">{student.year}</td>
-      <td className="px-4 py-2 text-center">{student.batchName}</td>
-      <td className="px-4 py-2 text-center">{student.department}</td>
+      <td className="px-4 py-2 text-center whitespace-nowrap">{student.batchName}</td>
+      <td className="px-4 py-2 text-center whitespace-nowrap">{student.department}</td>
       <td
         className="px-4 py-2 text-center font-bold"
         style={{ backgroundColor: "#d4f8e8" }} // Light green background

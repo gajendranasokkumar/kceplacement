@@ -193,7 +193,7 @@ const LeetCode = () => {
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-700 mb-6">LeetCode Statistics</h1>
 
-      {/* Download Button */}
+      {/* Download Button
       <div className="mb-4">
         <button
           onClick={downloadExcel}
@@ -206,7 +206,7 @@ const LeetCode = () => {
         >
           Download Excel
         </button>
-      </div>
+      </div> */}
 
       {/* Filter Section */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -255,7 +255,7 @@ const LeetCode = () => {
         {/* Filter Button */}
         <button
           onClick={handleFilter}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
+          className="px-4 py-2 rounded-lg transition-all bg-blue-200 text-blue-600 font-bold border-2 border-blue-600 hover:bg-blue-600 hover:text-white"
         >
           Filter
         </button>
@@ -263,9 +263,22 @@ const LeetCode = () => {
         {/* Clear Filters Button */}
         <button
           onClick={clearFilters}
-          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+          className="px-4 py-2 rounded-lg transition-all bg-gray-200 text-gray-600 font-bold border-2 border-gray-600 hover:bg-gray-600 hover:text-white"
         >
           Clear Filters
+        </button>
+
+        {/* Download Button */}
+        <button
+          onClick={downloadExcel}
+          disabled={!isFetchingCompleted} // Disable button until fetching is completed
+          className={`px-4 py-2 rounded-lg transition-all ${
+            isFetchingCompleted
+              ? "bg-green-200 text-green-600 font-bold border-2 border-green-600 hover:bg-green-600 hover:text-white"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          Download Excel
         </button>
       </div>
 
