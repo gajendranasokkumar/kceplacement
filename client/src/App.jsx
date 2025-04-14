@@ -5,158 +5,27 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { Toaster, toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import Cookies from "js-cookie";
+
 import Login from "./sections/Login";
 import Dashboard from "./sections/Dashboard";
 import Upload from "./sections/Upload";
 import Edit from "./sections/Edit";
-import NotificationSection from "./sections/NotificationSection"; // Import NotificationSection
-import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import NotificationSection from "./sections/NotificationSection";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import LeetCode from "./sections/LeetCode";
-import SocketListener from "./components/SocketListener"; // Import SocketListener
-import ShowStudents from "./sections/ShowStudents"; // Import ShowStudents component
-import Company from "./sections/Company"; // Import the Company component
-import HelpSection from "./sections/HelpSection"; // Import HelpSection
-import CustomToast from "./components/CustomToast"; // Import CustomToast
+import ShowStudents from "./sections/ShowStudents";
+import Company from "./sections/Company";
+import HelpSection from "./sections/HelpSection";
+import CustomToast from "./components/CustomToast";
+import AppWrapper from "./sections/Appwrapper"; // 👈 We'll move navigation logic there
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  const [isNavbarOpen, setIsNavbarOpen] = useState(
-    JSON.parse(localStorage.getItem("navbarState")) || true
-  );
-  const [notification, setNotification] = useState(null);
-
-  useEffect(() => {
-    if (token) localStorage.setItem("token", token);
-  }, [token]);
-
-  useEffect(() => {
-    localStorage.setItem("navbarState", JSON.stringify(isNavbarOpen));
-  }, [isNavbarOpen]);
-
-  useEffect(() => {
-    if (!token) {
-      localStorage.removeItem("token");
-    }
-  }, [token]);
-
-  const handleNotification = (data) => {
-    setNotification(data);
-  };
-
-  const closeNotification = () => {
-    setNotification(null);
-  };
-
   return (
     <Router>
-      <Toaster />
-      <div className="flex">
-        {/* Conditionally render Navbar */}
-        {token && (
-          <Navbar
-            isOpen={isNavbarOpen}
-            setIsNavbarOpen={setIsNavbarOpen}
-            setToken={setToken}
-          />
-        )}
-
-        {/* Main Content */}
-        <div
-          className={`flex-1 transition-all duration-500 ${
-            token && isNavbarOpen ? "ml-64" : token ? "ml-20" : "ml-0"
-          }`}
-        >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                token ? (
-                  <Navigate to="/dashboard" />
-                ) : (
-                  <Login setToken={setToken} />
-                )
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/upload"
-              element={
-                <ProtectedRoute>
-                  <Upload />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/edit"
-              element={
-                <ProtectedRoute>
-                  <Edit />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <NotificationSection />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/leetcode"
-              element={
-                <ProtectedRoute>
-                  <LeetCode />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/show-students"
-              element={
-                <ProtectedRoute>
-                  <ShowStudents />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/company"
-              element={
-                <ProtectedRoute>
-                  <Company />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/help"
-              element={
-                <ProtectedRoute>
-                  <HelpSection />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-
-          {/* Socket Listener */}
-          {/* <SocketListener onNotification={handleNotification} /> */}
-
-          {/* Custom Notification */}
-          {notification && (
-            <CustomToast 
-              message={notification} 
-              onClose={closeNotification}
-            />
-          )}
-        </div>
-      </div>
+      <AppWrapper />
     </Router>
   );
 };

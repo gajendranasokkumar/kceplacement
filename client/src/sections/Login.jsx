@@ -6,6 +6,8 @@ import Card from "../components/Card";
 import CardContent from "../components/CardContent";
 import Input from "../components/Input";
 import { useApi } from "../api/api"; // Import the API utility
+import Cookies from "js-cookie";
+
 
 const Login = ({ setToken }) => {
   const api = useApi();
@@ -19,8 +21,11 @@ const Login = ({ setToken }) => {
         email,
         password,
       });
-      localStorage.setItem("token", data.token); // Store token in localStorage
-      localStorage.setItem("userId", data.userId); // Add this line
+      const expiryDate = new Date(new Date().getTime() + 12 * 60 * 60 * 1000); // 1 hours from now
+
+      Cookies.set("token", data.token, { expires: expiryDate });
+      Cookies.set("userId", data.userId, { expires: expiryDate });
+
       setToken(data.token); // Update token in the app context
       toast.success("Login Successful");
     } catch (error) {

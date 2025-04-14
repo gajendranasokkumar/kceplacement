@@ -1,10 +1,13 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import Cookies from "js-cookie";
+
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const token = Cookies.get("token");
 
   if (!token) {
+    Cookies.remove("token");
     return <Navigate to="/" replace />;
   }
 

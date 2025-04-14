@@ -10,12 +10,14 @@ import {
   FaQuestionCircle,
 } from "react-icons/fa";
 import { HiOutlineLogout } from "react-icons/hi"; // Import HiOutlineLogout
+import Cookies from "js-cookie";
+
 
 const Navbar = ({ isOpen, setIsOpen, setToken }) => {
   const navigate = useNavigate(); // Initialize navigate
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    Cookies.remove("token"); // 🔥 Remove token cookie
     setToken(null);
     navigate("/"); // Redirect to login page
   };
