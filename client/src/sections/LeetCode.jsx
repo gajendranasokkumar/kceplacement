@@ -35,7 +35,7 @@ const LeetCode = () => {
         setBatches(Array.isArray(batchResponse.data) ? batchResponse.data : []); // Ensure batches is an array
         setDepartments(Array.isArray(departmentResponse.data) ? departmentResponse.data : []); // Ensure departments is an array
       } catch (error) {
-        console.error("Failed to fetch filters", error);
+        // console.error("Failed to fetch filters", error);
         setYears([]); // Fallback to an empty array
         setBatches([]); // Fallback to an empty array
         setDepartments([]); // Fallback to an empty array
@@ -58,7 +58,7 @@ const LeetCode = () => {
       setFilteredStudents(data);
       setIsFiltered(true); // Mark that filtering has been applied
     } catch (error) {
-      console.error("Failed to fetch students", error);
+      // console.error("Failed to fetch students", error);
       setStudents([]);
       setFilteredStudents([]);
       setIsFiltered(true); // Mark that filtering has been applied even if no data is fetched
@@ -77,22 +77,32 @@ const LeetCode = () => {
     if (isFiltered) {
       const fetchStats = async () => {
         const newStats = {};
+        
         for (const student of filteredStudents) {
+          // Initialize stats object for this student
+          newStats[student._id] = {
+            totalSolved: 0,
+            easySolved: 0,
+            mediumSolved: 0,
+            hardSolved: 0,
+            gfgProblemsSolved: 0,
+            codechefProblemsSolved: 0,
+          };
+          
+          // Extract usernames from URLs
+          const leetcodeUrlParts = student.leetcodeUsername.replace(/\/$/, "").split("/");
+          const leetcodeUsername = leetcodeUrlParts[leetcodeUrlParts.length - 1];
+          
+          const gfgUrlParts = student.gfgUsername.replace(/\/$/, "").split("/");
+          const gfgUsername = gfgUrlParts[gfgUrlParts.length - 1];
+          
+          const codechefUrlParts = student.codechefUsername.replace(/\/$/, "").split("/");
+          const codechefUsername = codechefUrlParts[codechefUrlParts.length - 1];
+          
+          // console.log(` ☑️☑️☑️☑️☑️☑️☑️☑️☑️ Fetching stats for LeetCode: ${leetcodeUsername}, GFG: ${gfgUsername}, CodeChef: ${codechefUsername}`);
+          
+          // Fetch LeetCode stats with separate try-catch
           try {
-            // Extract the username from the leetcodeUsername link
-            const leetcodeUrlParts = student.leetcodeUsername.replace(/\/$/, "").split("/");
-            const leetcodeUsername = leetcodeUrlParts[leetcodeUrlParts.length - 1];
-
-            // Extract the username from the gfgUsername link
-            const gfgUrlParts = student.gfgUsername.replace(/\/$/, "").split("/");
-            const gfgUsername = gfgUrlParts[gfgUrlParts.length - 1];
-
-            // Extract the username from the codechefUsername link
-            const codechefUrlParts = student.codechefUsername.replace(/\/$/, "").split("/");
-            const codechefUsername = codechefUrlParts[codechefUrlParts.length - 1];
-
-            console.log(`Fetching stats for LeetCode: ${leetcodeUsername}, GFG: ${gfgUsername}, CodeChef: ${codechefUsername}`);
-
             // GraphQL query to fetch LeetCode statistics
             const query = `
               query getUserProfile($username: String!) {
@@ -108,56 +118,73 @@ const LeetCode = () => {
               }
             `;
 
-            // Fetch LeetCode stats
             const { data: leetcodeData } = await api.post("/leetcode/graphql", {
               query,
               variables: { username: leetcodeUsername },
             });
 
-            const leetcodeStats = leetcodeData.data.matchedUser.submitStatsGlobal.acSubmissionNum.reduce(
-              (acc, item) => {
-                if (item.difficulty === "Easy") acc.easySolved = item.count;
-                if (item.difficulty === "Medium") acc.mediumSolved = item.count;
-                if (item.difficulty === "Hard") acc.hardSolved = item.count;
-                return acc;
-              },
-              { easySolved: 0, mediumSolved: 0, hardSolved: 0 }
-            );
+            // console.log("LeetCode data received ☑️ -> " + JSON.stringify(leetcodeData.data));
 
-            leetcodeStats.totalSolved =
-              leetcodeStats.easySolved + leetcodeStats.mediumSolved + leetcodeStats.hardSolved;
+            if (leetcodeData.data && leetcodeData.data.matchedUser) {
+              const leetcodeStats = leetcodeData.data.matchedUser.submitStatsGlobal.acSubmissionNum.reduce(
+                (acc, item) => {
+                  if (item.difficulty === "Easy") acc.easySolved = item.count;
+                  if (item.difficulty === "Medium") acc.mediumSolved = item.count;
+                  if (item.difficulty === "Hard") acc.hardSolved = item.count;
+                  return acc;
+                },
+                { easySolved: 0, mediumSolved: 0, hardSolved: 0 }
+              );
 
-            // Fetch GFG stats
-            const { data: gfgData } = await api.get(`/gfg/stats/${gfgUsername}`);
-            const gfgStats = {
-              gfgProblemsSolved: gfgData.problemsSolved || 0,
-            };
-            console.log(`GFG Username: ${gfgUsername}, Problems Solved: ${gfgStats.gfgProblemsSolved}`);
-            
-
-            // Fetch CodeChef stats
-            const { data: codechefData } = await api.get(`/codechef/stats/${codechefUsername}`);
-            const codechefStats = {
-              codechefProblemsSolved: codechefData.problemsSolved || 0,
-            };
-
-            newStats[student._id] = {
-              ...leetcodeStats,
-              ...gfgStats,
-              ...codechefStats,
-            };
+              leetcodeStats.totalSolved =
+                leetcodeStats.easySolved + leetcodeStats.mediumSolved + leetcodeStats.hardSolved;
+              
+              // Update student stats with LeetCode data
+              newStats[student._id] = {
+                ...newStats[student._id],
+                ...leetcodeStats
+              };
+            }
           } catch (error) {
-            console.error(`Failed to fetch stats for ${student.leetcodeUsername}`, error);
-            newStats[student._id] = {
-              totalSolved: 0,
-              easySolved: 0,
-              mediumSolved: 0,
-              hardSolved: 0,
-              gfgProblemsSolved: 0,
-              codechefProblemsSolved: 0,
-            };
+            // console.error(`Failed to fetch LeetCode stats for ${leetcodeUsername}`, error);
+            // LeetCode stats remain at default values (0)
+          }
+
+          // Fetch GFG stats with separate try-catch
+          try {
+            const { data: gfgData } = await api.get(`/gfg/stats/${gfgUsername}`);
+            // console.log(`GFG Username: ${gfgUsername}, Data:`, gfgData);
+            
+            if (gfgData && gfgData.problemsSolved !== undefined) {
+              // Update student stats with GFG data
+              newStats[student._id] = {
+                ...newStats[student._id],
+                gfgProblemsSolved: gfgData.problemsSolved || 0
+              };
+            }
+          } catch (error) {
+            // console.error(`Failed to fetch GFG stats for ${gfgUsername}`, error);
+            // GFG stats remain at default values (0)
+          }
+
+          // Fetch CodeChef stats with separate try-catch
+          try {
+            const { data: codechefData } = await api.get(`/codechef/stats/${codechefUsername}`);
+            // console.log(`CodeChef Username: ${codechefUsername}, Data:`, codechefData);
+            
+            if (codechefData && codechefData.problemsSolved !== undefined) {
+              // Update student stats with CodeChef data
+              newStats[student._id] = {
+                ...newStats[student._id],
+                codechefProblemsSolved: codechefData.problemsSolved || 0
+              };
+            }
+          } catch (error) {
+            // console.error(`Failed to fetch CodeChef stats for ${codechefUsername}`, error);
+            // CodeChef stats remain at default values (0)
           }
         }
+        
         setStats(newStats);
         setIsFetchingCompleted(true); // Mark fetching as completed
       };
@@ -192,21 +219,6 @@ const LeetCode = () => {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-700 mb-6">LeetCode Statistics</h1>
-
-      {/* Download Button
-      <div className="mb-4">
-        <button
-          onClick={downloadExcel}
-          disabled={!isFetchingCompleted} // Disable button until fetching is completed
-          className={`px-4 py-2 rounded-lg ${
-            isFetchingCompleted
-              ? "bg-green-500 text-white hover:bg-green-600"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
-        >
-          Download Excel
-        </button>
-      </div> */}
 
       {/* Filter Section */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
